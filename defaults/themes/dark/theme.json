@@ -1,0 +1,16 @@
+{
+    "fonts": {
+        "title": {
+            "color": "#FFFFFF"
+        },
+        "subtitle": {
+            "color": "#CCCCCC"
+        },
+        "footer": {
+            "color": "#999999"
+        }
+    },
+    "backgrounds": {
+        "image": "defaults/themes/dark/bgimages/bg_image2.mp4"
+    }
+}

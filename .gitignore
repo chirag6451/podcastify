@@ -24,8 +24,6 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
-# Virtual Environment
 venv/
 env/
 ENV/
@@ -38,14 +36,25 @@ ENV/
 
 # Logs
 *.log
+logs/
+heygen_monitor.log
+video_creation.log
+conversation.log
 
 # Database
 *.sqlite3
 *.db
+dump.rdb
 
 # Media files
 media/
 uploads/
+defaults/videos/
+defaults/audio/
+defaults/bgimages/
+defaults/bgmusic/
+defaults/images/
+defaults/speakers/
 *.mp3
 *.mp4
 *.wav
@@ -54,11 +63,12 @@ uploads/
 *.jpeg
 *.png
 videos/
-defaults/
 
 # Backup files
 *.bak
-sql/
+*BK.*
+*BK/
+test_*
 
 # System Files
 .DS_Store
