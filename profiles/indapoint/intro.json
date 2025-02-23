@@ -1,0 +1,17 @@
+{
+    "background_image_path": "video_creator/defaults/bgimages/bg2.jpeg",
+    "background_music_path": "video_creator/defaults/bgmusic/s3.mp3", 
+    "background_video_path": "video_creator/defaults/videos/1_optimized.mp4",
+    "fixed_video_path": "profiles/indapoint/videos/intro7.mp4",
+    "bg_music_volume": 0.1,
+    "footer_settings_font_color": "#5F5B4CFF",
+    "footer_settings_font_name": "Helvetica",
+    "footer_settings_font_size": 20,
+    "footer_settings_padding": 20,
+    "footer_settings_position": "bottom-center",
+    "footer_settings_show_social_links": true,
+    "footer_settings_show_website": true,
+    "footer_settings_text": "Visit us at www.indapoint.com  2| Follow @indapoint",
+    "logo_settings_logo_position": "top-right",
+    "output_filename": "intro7.mp4"
+}
