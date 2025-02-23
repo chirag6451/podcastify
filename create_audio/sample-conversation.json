@@ -1,0 +1,29 @@
+{
+    "topic": "DeepSeek R1: The Unexpected Challenger in AI",
+    "intro": {
+      "text": "Welcome to IndaPoint Technologies Talks Today, where we explore how innovation reshapes our world. In this episode, we dive into the story of DeepSeek R1—a highly efficient, open-source AI model from China that surprised everyone by doing more with less. Join us as we break down what makes it unique and how it compares to elite models like OpenAI’s GPT and Anthropic’s Claude.",
+      "speaker": "Priya"
+    },
+    "conversation": [
+      {
+        "order": 0,
+        "speaker": "Priya",
+        "text": "Chirag, I heard that just a week or so ago a little-known Chinese company called DeepSeek quietly debuted an AI app—and then suddenly, U.S. technology stocks dropped billions of dollars. What happened?"
+      },
+      {
+        "order": 1,
+        "speaker": "Chirag",
+        "text": "That’s right, Priya. Imagine our school, which isn’t usually famous for major breakthroughs, suddenly producing a project that matches the work of the top schools—but on a shoestring budget. DeepSeek is that unexpected project. They developed and trained their AI for just pennies on the dollar compared to the vast sums American companies spend on research and development."
+      }
+      
+    ],
+    "outro": {
+      "text": "That wraps up our deep dive into DeepSeek R1 and its innovative approach. We explored how a little-known company built a powerful, efficient, and open-source AI model that’s stirring up the tech world. Stay curious and keep asking questions as we continue to unravel the wonders of AI. Thanks for tuning in!",
+      "speaker": "Priya"
+    },
+    "speakers": [
+      "Priya",
+      "Chirag"
+    ]
+  }
+  

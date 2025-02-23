@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PodcastAI Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .status-badge {
+            @apply px-2 py-1 rounded-full text-sm font-semibold;
+        }
+        .status-pending { @apply bg-yellow-200 text-yellow-800; }
+        .status-processing { @apply bg-blue-200 text-blue-800; }
+        .status-completed { @apply bg-green-200 text-green-800; }
+        .status-failed { @apply bg-red-200 text-red-800; }
+        
+        .job-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        
+        .job-profile {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .job-topic {
+            color: #666;
+        }
+        
+        .job-date {
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        .job-status {
+            margin-top: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-processing {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #4f46e5;
+            transition: width 0.3s ease;
+        }
+
+        .job-message {
+            font-size: 0.9em;
+            margin: 5px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">🎙️ PodcastAI Generator</h1>
+
+        <!-- Create Podcast Form -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Create New Podcast</h2>
+            <form id="podcastForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Profile</label>
+                    <select id="profile" name="profile" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="indapoint">IndaPoint AI</option>
+                        <option value="techpro">TechPro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Topic Type</label>
+                    <select id="topicType" name="topicType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="tech">Tech</option>
+                        <option value="ai">AI</option>
+                        <option value="business">Business</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Custom Topic (Optional)</label>
+                    <textarea id="customTopic" name="customTopic" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                </div>
+                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                    Generate Podcast
+                </button>
+            </form>
+        </div>
+
+        <!-- Active Jobs -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Active Jobs</h2>
+            <div id="activeJobs" class="space-y-4">
+                <!-- Jobs will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Job History -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Job History</h2>
+            <div id="jobHistory" class="space-y-4">
+                <!-- Job history will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+
+        // Function to update job item in the UI
+        function updateJobItem(jobId, data) {
+            const jobDiv = document.querySelector(`[data-job-id="${jobId}"]`);
+            if (!jobDiv) {
+                // If job div doesn't exist, refresh the whole job history
+                updateJobHistory();
+                return;
+            }
+
+            // Update status
+            const statusDiv = jobDiv.querySelector('.job-status');
+            if (statusDiv) {
+                statusDiv.className = `job-status status-${data.status}`;
+                statusDiv.textContent = data.status;
+            }
+
+            // Update progress bar
+            let progressBar = jobDiv.querySelector('.progress-bar');
+            if (!progressBar && data.status === 'processing') {
+                // Create progress bar if it doesn't exist
+                progressBar = document.createElement('div');
+                progressBar.className = 'progress-bar';
+                progressBar.innerHTML = '<div class="progress-bar-fill"></div>';
+                jobDiv.appendChild(progressBar);
+            }
+
+            if (progressBar) {
+                const progressFill = progressBar.querySelector('.progress-bar-fill');
+                if (progressFill) {
+                    progressFill.style.width = `${data.progress}%`;
+                }
+            }
+
+            // Update message
+            let messageDiv = jobDiv.querySelector('.job-message');
+            if (!messageDiv) {
+                messageDiv = document.createElement('div');
+                messageDiv.className = 'job-message';
+                jobDiv.appendChild(messageDiv);
+            }
+            messageDiv.textContent = data.message || '';
+
+            // Update error message if present
+            if (data.error_message) {
+                let errorDiv = jobDiv.querySelector('.error-message');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    jobDiv.appendChild(errorDiv);
+                }
+                errorDiv.textContent = data.error_message;
+            }
+
+            // Update output filename if present
+            if (data.output_filename) {
+                let outputDiv = jobDiv.querySelector('.output-filename');
+                if (!outputDiv) {
+                    outputDiv = document.createElement('div');
+                    outputDiv.className = 'output-filename';
+                    jobDiv.appendChild(outputDiv);
+                }
+                outputDiv.textContent = `Output: ${data.output_filename}`;
+            }
+
+            // Remove progress bar if job is completed or failed
+            if (data.status === 'completed' || data.status === 'failed') {
+                if (progressBar) {
+                    progressBar.remove();
+                }
+            }
+        }
+
+        // Function to update job history
+        async function updateJobHistory() {
+            try {
+                const response = await fetch('/api/podcasts');
+                const jobs = await response.json();
+                const jobHistoryDiv = document.getElementById('jobHistory');
+                jobHistoryDiv.innerHTML = ''; // Clear existing history
+
+                // Sort jobs by creation date, newest first
+                jobs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                jobs.forEach(job => {
+                    const jobDiv = document.createElement('div');
+                    jobDiv.className = 'job-item';
+                    jobDiv.setAttribute('data-job-id', job.id);
+                    
+                    let statusClass = 'status-' + job.status;
+                    let statusDisplay = job.status;
+                    
+                    jobDiv.innerHTML = `
+                        <div class="job-profile">${job.profile_name}</div>
+                        <div class="job-topic">${job.topic_type}</div>
+                        <div class="job-date">${formatDate(job.created_at)}</div>
+                        <div class="job-status ${statusClass}">${statusDisplay}</div>
+                        ${job.status === 'processing' ? '<div class="progress-bar"><div class="progress-bar-fill" style="width: 0%"></div></div>' : ''}
+                        ${job.message ? `<div class="job-message">${job.message}</div>` : ''}
+                        ${job.error_message ? `<div class="error-message">${job.error_message}</div>` : ''}
+                        ${job.output_filename ? `<div class="output-filename">Output: ${job.output_filename}</div>` : ''}
+                    `;
+                    jobHistoryDiv.appendChild(jobDiv);
+
+                    // If job is processing, connect to WebSocket
+                    if (job.status === 'processing') {
+                        connectWebSocket(job.id);
+                    }
+                });
+            } catch (error) {
+                console.error('Error updating job history:', error);
+            }
+        }
+
+        // Function to handle form submission
+        async function handleSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            // Create request body
+            const requestBody = {
+                profile_name: formData.get('profile'),
+                topic_type: formData.get('topicType'),
+                topic: formData.get('customTopic') || null
+            };
+
+            try {
+                // Disable submit button
+                const submitButton = form.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+
+                // Send request
+                const response = await fetch('/api/podcasts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to create podcast');
+                }
+
+                const result = await response.json();
+                
+                // Connect to WebSocket for this job
+                connectWebSocket(result.job_id);
+                
+                // Clear form
+                form.reset();
+                
+                // Update job history
+                await updateJobHistory();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message);
+            } finally {
+                // Re-enable submit button
+                const submitButton = form.querySelector('button[type="submit"]');
+                submitButton.disabled = false;
+            }
+        }
+
+        // Function to connect to WebSocket
+        function connectWebSocket(jobId) {
+            const ws = new WebSocket(`ws://${window.location.host}/ws/${jobId}`);
+            
+            ws.onmessage = async function(event) {
+                const data = JSON.parse(event.data);
+                console.log('WebSocket message:', data);
+                
+                // Update the specific job item
+                updateJobItem(jobId, data);
+                
+                // Close WebSocket if job is completed or failed
+                if (data.status === 'completed' || data.status === 'failed') {
+                    ws.close();
+                }
+            };
+            
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+            
+            ws.onclose = function() {
+                console.log('WebSocket closed for job:', jobId);
+            };
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add form submit handler
+            document.getElementById('podcastForm').addEventListener('submit', handleSubmit);
+            
+            // Load initial job history
+            updateJobHistory();
+            
+            // Set up periodic job history updates
+            setInterval(updateJobHistory, 5000);
+        });
+    </script>
+</body>
+</html>
