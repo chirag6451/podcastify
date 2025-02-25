@@ -87,10 +87,10 @@ def get_conversation_prompts(
     Follow these rules:
 
     1. Introduction and Structure:
-       - Create a professional intro identifying the subject and setting context, for exmmple if context is about a blog post, then the intro should be about blog post, if it is about given topic, then the intro should be about the given topic, if it is about a podcast, then the intro should be about the podcast.
+       - Create a professional intro identifying the subject and setting context, for exmmple if context is about a blog post, then the intro should be about blog post, if it is about given topic, then the intro should be about the given topic, if it is about a podcast, then the intro should be about the podcast. Let us detail topic being discussed in the intro and present in question format to create curiosity and interest
        - Mention host/business credentials if provided
        - Outline what listeners will learn
-       - Keep intro concise (2-3 sentences)
+       - Keep intro concise (5 to 10 sentences)
        
     2. Language and Cultural Context:
        - Generate the conversation entirely in {language.upper()}
@@ -140,6 +140,8 @@ def get_conversation_prompts(
 
     Required JSON Output Format:
     {{
+    
+    "Podcast_topic_intro": "Intro to podcast topic",
       "intro": {{
         "text": "Professional introduction text",
         "speaker": "Host name"

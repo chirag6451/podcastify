@@ -22,6 +22,7 @@
     "business_info_social_media_twitter": "@indapoint",
     "business_info_type": "IT Consulting Company",
     "business_info_website": "www.indapoint.com",
+    "business_info_representative_name": "Chirag Kansara",
     "codec": "libx264",
     "create_thumbnails": true,
     "default_settings": {
@@ -52,7 +53,9 @@
     "hygen_bumper_background_path": "defaults/videos/2.mp4",
     "hygen_bumper_duration": 5,
     "hygen_bumper_output_filename": "hygen_bumper.mp4",
+    "hygen_file_name": "hygen_video.mp4",
     "intro_video": true,
+    "intro_filename": "intro.mp4",
     "logo_settings_logo_position": "top-right",
     "logo_settings_logo_size": [
         75,

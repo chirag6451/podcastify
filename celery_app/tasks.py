@@ -8,6 +8,7 @@ from api.db import get_db, engine
 from api.models import PodcastJob
 from api.logger import PodcastLogger
 from create_audio.conversation_generator import generate_conversation
+from utils.file_writer import get_output_path
 from video_creator import create_podcast_video
 from utils.logger_utils import PodcastLogger
 from config import get_error_detail, format_error_message
@@ -63,6 +64,7 @@ def generate_audio_task(self,request_dict: dict, config: dict, business_info: di
             config=config,
             request_dict=request_dict
         )
+        exit()
         # audio_path=config_settings.STATIC_AUDIO_PATH
         # schema_path = config_settings.STATIC_SCHEMA_PATH
         # welcome_audio_path = config_settings.STATIC_WELCOME_PATH
@@ -133,7 +135,14 @@ def create_video_task(self, audio_path: str, config: dict, job_id: str, request_
         
         # Create output filename
         output_filename = f"podcast_{job_id}.mp4"
-        output_path = os.path.join("outputs", output_filename)
+        #let us call get output path
+        output_path, _ = get_output_path(
+            filename=output_filename,
+            profile_name=request_dict.get('profile_name'),
+            customer_id=request_dict.get('customer_id'),
+            job_id=job_id,
+            theme=request_dict.get('theme', 'default')
+        )
         
         # Create video with the provided configuration
         video_path, thumbnail_paths = create_podcast_video(

@@ -1,0 +1,12 @@
+{
+    "voice_settings": {
+        "num_turns": 2,
+        "welcome_voice_id": "cgSgspJ2msm6clMCkdW9",
+        "voice_id1": "cgSgspJ2msm6clMCkdW9",
+        "voice_id2": "iP95p4xoKVk53GoZ742B",
+        "speaker1_name": "Jessica",
+        "speaker2_name": "Ken",
+        "language": "English",
+        "voice_accent": "Indian"
+    }
+}

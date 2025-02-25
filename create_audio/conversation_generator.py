@@ -13,6 +13,8 @@ from create_audio.db_utils import PodcastDB
 from create_audio.logger_utils import PodcastLogger
 import config as config_settings
 import random
+from utils.file_writer import get_output_path
+from utils.open_ai_utils import get_podcast_intro
 # Initialize logger
 logger = PodcastLogger("ConversationGenerator", "conversation.log")
 
@@ -89,16 +91,9 @@ def generate_conversation(
     
    
     #print(json.dumps(config, indent=4))
-    output_dir = config.get("output_dir", "output")
     
     # Create output directory if not provided
-    if output_dir is None:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        clean_topic = clean_filename(request_dict.get("topic"))
-        output_dir = os.path.join(output_dir, f"{timestamp}_{clean_topic}")
-  
     
-    ensure_directory(output_dir)
     
     try:
         # Use provided voice IDs or select speakers from database
@@ -165,7 +160,8 @@ def generate_conversation(
         # Parse the response
         conversation_data = json.loads(response.choices[0].message.content)
         #let us print in nice format
-    
+        #logger.info(f"Conversation data: {json.dumps(conversation_data, indent=4)}")
+      
         
         # Convert to our conversation class
         turns = []
@@ -223,12 +219,39 @@ def generate_conversation(
         # Print conversation summary
      
         # Save the conversation schema
-        schema_path = os.path.join(output_dir, "conversation.json")
+        schema_path, schema_output_dir = get_output_path(
+            filename="conversation.json",
+            profile_name=request_dict.get("profile_name"),
+            customer_id=request_dict.get("customer_id"),
+            job_id=job_id,
+            theme=request_dict.get("theme", "default"),
+            timestamp_format="%Y%m%d_%H%M%S",
+            create_dir=True
+        )
+        
         with open(schema_path, "w") as f:
             json.dump(conversation.to_dict(), f, indent=2)
         
-        logger.success(f"Saved conversation schema to {schema_path}")
+        logger.info(f"Saved conversation schema to {schema_path}")
         
+        #let us generate podcast intro
+        logger.info("Generating podcast intro...")
+        podcast_intro = get_podcast_intro(request_dict.get("topic"), conversation, "Chirag Kansara")
+        print(json.dumps(podcast_intro, indent=4))
+        exit()
+        
+        
+        # Generate audio files
+        logger.info("Generating audio files...")
+        _, output_dir = get_output_path(
+            filename="dummy.txt",  # We only need the directory
+            profile_name=request_dict.get("profile_name"),
+            customer_id=request_dict.get("customer_id"),
+            job_id=job_id,
+            theme=request_dict.get("theme", "default"),
+            timestamp_format="%Y%m%d_%H%M%S",
+            create_dir=True
+        )
         
         # Generate audio files
         logger.info("Generating audio files...")

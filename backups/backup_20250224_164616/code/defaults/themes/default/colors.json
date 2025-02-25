@@ -1,0 +1,14 @@
+{
+    "background_color": "#1a1a1a",
+    "text_colors": {
+        "title": "#EBE0E2",
+        "subtitle": "#EBE0E2",
+        "footer": "#FFFFFF"
+    },
+    "overlay_colors": {
+        "text_background": {
+            "color": "#000000",
+            "opacity": 0.6
+        }
+    }
+}

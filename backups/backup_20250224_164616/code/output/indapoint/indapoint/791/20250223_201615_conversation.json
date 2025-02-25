@@ -1,0 +1,45 @@
+{
+  "topic": "AI and Business how to implement Safe AI",
+  "intro": {
+    "text": "Welcome to the IndaPoint Technologies podcast, where we delve into the intriguing world of AI's intersection with business. Today, Ken and I will explore how to implement Safe AI, ensuring it's ethical and beneficial for all. You'll gain insights on safeguarding AI practices that not only drive innovation but protect societal interests.",
+    "speaker": "Jessica"
+  },
+  "conversation": [
+    {
+      "order": 0,
+      "speaker": "Jessica",
+      "text": "Welcome to the IndaPoint Technologies podcast, where we delve into the intriguing world of AI's intersection with business. Today, Ken and I will explore how to implement Safe AI, ensuring it's ethical and beneficial for all. You'll gain insights on safeguarding AI practices that not only drive innovation but protect societal interests.",
+      "overlap_with": {}
+    },
+    {
+      "order": 1,
+      "speaker": "Jessica",
+      "text": "Ken, AI is revolutionizing businesses everywhere! But, you know, the important question is, how do we ensure it's 'SAFE'? I mean, there are so many ways it can go wrong, right?",
+      "overlap_with": {
+        "Ken": "Absolutely!"
+      }
+    },
+    {
+      "order": 2,
+      "speaker": "Ken",
+      "text": "Definitely, Jessica. The key to implementing Safe AI is clear guidelines for data privacy and ethical use. Companies must... and should... integrate AI strategies that are transparent and accountable. It's crucial!",
+      "overlap_with": {
+        "Jessica": "Exactly!"
+      }
+    },
+    {
+      "order": 4,
+      "speaker": "Jessica",
+      "text": "In wrapping up, remember the importance of embracing AI with an ethical framework in place. If you're keen to learn more, visit us at www.indapoint.com or follow us on social media. Thanks for tuning in!",
+      "overlap_with": {}
+    }
+  ],
+  "outro": {
+    "text": "In wrapping up, remember the importance of embracing AI with an ethical framework in place. If you're keen to learn more, visit us at www.indapoint.com or follow us on social media. Thanks for tuning in!",
+    "speaker": "Jessica"
+  },
+  "speakers": [
+    "Jessica",
+    "Ken"
+  ]
+}

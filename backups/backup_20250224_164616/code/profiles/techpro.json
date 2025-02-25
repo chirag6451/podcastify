@@ -1,0 +1,57 @@
+{
+    "profile_name": "TechPro Insights",
+    "voice_settings": {
+        "voice_id1": "21m00Tcm4TlvDq8ikWAM",
+        "voice_id2": "AZnzlk1XvdvUeBnXmlld",
+        "speaker1_name": "Sarah",
+        "speaker2_name": "Michael",
+        "language": "English",
+        "voice_accent": "American"
+    },
+    "video_settings": {
+        "title_font_size": 70,
+        "title_font_color": "#2C3E50",
+        "title_font_name": "Arial-Bold",
+        "subtitle_font_size": 45,
+        "subtitle_font_color": "#34495E",
+        "subtitle_font_name": "Arial",
+        "footer_settings": {
+            "font_size": 35,
+            "font_color": "#7F8C8D",
+            "font_name": "Arial",
+            "text": "TechPro Insights | www.techpro.com | @techpro",
+            "show_social_links": true,
+            "show_website": true,
+            "position": "bottom-center",
+            "padding": 25,
+            "additional_text": "Subscribe for more tech insights"
+        },
+        "resolution": [1920, 1080],
+        "bg_music_volume": 0.15,
+        "videos_library_path": "video_creator/defaults/videos",
+        "background_image_path": "video_creator/defaults/bgimages/bg2.jpeg",
+        "background_music_path": "video_creator/defaults/bgmusic/s2.mp3",
+        "logo_settings": {
+            "main_logo_path": "video_creator/defaults/logos/techpro_logo.png",
+            "watermark_logo_path": "video_creator/defaults/logos/techpro_watermark.png",
+            "logo_size": [180, 90],
+            "logo_position": "bottom-right",
+            "watermark_opacity": 0.25,
+            "show_watermark": true
+        }
+    },
+    "business_info": {
+        "type": "podcast",
+        "name": "TechPro Insights",
+        "website": "www.techpro.com",
+        "email": "info@techpro.com",
+        "social_media": {
+            "twitter": "@techpro",
+            "linkedin": "techpro-insights"
+        }
+    },
+    "default_settings": {
+        "num_turns": 4,
+        "conversation_mood": "professional and detailed"
+    }
+}

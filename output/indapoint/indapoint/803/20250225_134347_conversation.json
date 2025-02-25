@@ -1,0 +1,45 @@
+{
+  "topic": "The biggest mistakes that we make in our lives",
+  "intro": {
+    "text": "Welcome to today's episode of the IndaPoint Podcast! I'm your host, Jessica, and today we're diving deep into a topic that resonates with everyone\u2014THE BIGGEST MISTAKES WE MAKE IN OUR LIVES. Have you ever found yourself wondering, 'Why did I make that decision?' or 'Could things have been different?' We\u2019ll explore these compelling questions and uncover the truths that keep us from reaching our full potential.",
+    "speaker": "Jessica"
+  },
+  "conversation": [
+    {
+      "order": 0,
+      "speaker": "Jessica",
+      "text": "Welcome to today's episode of the IndaPoint Podcast! I'm your host, Jessica, and today we're diving deep into a topic that resonates with everyone\u2014THE BIGGEST MISTAKES WE MAKE IN OUR LIVES. Have you ever found yourself wondering, 'Why did I make that decision?' or 'Could things have been different?' We\u2019ll explore these compelling questions and uncover the truths that keep us from reaching our full potential.",
+      "overlap_with": {}
+    },
+    {
+      "order": 1,
+      "speaker": "Jessica",
+      "text": "You know, Ken, I've always thought that one of the biggest mistakes we make is not taking risks when we should. It's like we're sometimes too scared to step out of our comfort zone... What's your take on this?",
+      "overlap_with": {
+        "Ken": "Hmm, interesting!"
+      }
+    },
+    {
+      "order": 2,
+      "speaker": "Ken",
+      "text": "Absolutely, Jessica! I think fear plays such a major role. We often underestimate our capabilities and what we can achieve if we just push through that initial fear. We, as humans, tend to focus on the 'what ifs' without considering the potential growth. Would you say that resonates with you too?",
+      "overlap_with": {
+        "Jessica": "Oh, totally!"
+      }
+    },
+    {
+      "order": 4,
+      "speaker": "Jessica",
+      "text": "Thank you for tuning in to our thought-provoking discussion today! Remember, embracing risks can lead to personal growth, so let's not shy away from them. For more insights, visit our website at www.indapoint.com, or join the conversation on our social media. Until next time, this is Jessica reminding you to not be afraid to take those leaps!",
+      "overlap_with": {}
+    }
+  ],
+  "outro": {
+    "text": "Thank you for tuning in to our thought-provoking discussion today! Remember, embracing risks can lead to personal growth, so let's not shy away from them. For more insights, visit our website at www.indapoint.com, or join the conversation on our social media. Until next time, this is Jessica reminding you to not be afraid to take those leaps!",
+    "speaker": "Jessica"
+  },
+  "speakers": [
+    "Jessica",
+    "Ken"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "topic": "The biggest mistakes that we make in our lives",
+  "intro": {
+    "text": "Hello, and welcome to IndaPoint Technologies' latest podcast episode! Life is a series of choices, and sometimes, we make mistakes. But what are the BIGGEST ones we make in our lives, and how can we learn from them? Today, we've got Jessica and Ken here to discuss this intriguing topic. As we delve into this conversation, you'll gain insights into avoiding these big pitfalls and perhaps even recognize some of them in your own life! So grab a cup of chai, get comfy, and join us in this introspective discussion.",
+    "speaker": "Jessica"
+  },
+  "conversation": [
+    {
+      "order": 0,
+      "speaker": "Jessica",
+      "text": "Hello, and welcome to IndaPoint Technologies' latest podcast episode! Life is a series of choices, and sometimes, we make mistakes. But what are the BIGGEST ones we make in our lives, and how can we learn from them? Today, we've got Jessica and Ken here to discuss this intriguing topic. As we delve into this conversation, you'll gain insights into avoiding these big pitfalls and perhaps even recognize some of them in your own life! So grab a cup of chai, get comfy, and join us in this introspective discussion.",
+      "overlap_with": {}
+    },
+    {
+      "order": 1,
+      "speaker": "Jessica",
+      "text": "You know, Ken, reflecting on the mistakes we've made... it can be quite eye-opening! One mistake that often comes to mind for many is letting fear dictate our decisions. It's like we subconsciously choose 'safety' over our dreams just because we are too afraid of failure...",
+      "overlap_with": {
+        "Ken": "Absolutely!"
+      }
+    },
+    {
+      "order": 2,
+      "speaker": "Ken",
+      "text": "That\u2019s so true, Jessica! And another big one could be... not valuing our time enough. We often waste precious time on trivial things and then wonder where it all went. It\u2019s like we forget that time is the most valuable currency in life. We need to invest it wisely, don\u2019t you think?",
+      "overlap_with": {
+        "Jessica": "Definitely!"
+      }
+    },
+    {
+      "order": 4,
+      "speaker": "Jessica",
+      "text": "Thanks for joining us today as we explored some of life\u2019s biggest mistakes. Remember, it's never too late to learn from them and make better choices! Visit us at www.indapoint.com or drop us an email at info@indapoint.com. Connect with us on social media at 'indapoint' on LinkedIn or '@indapoint' on Twitter. Until next time, keep growing and learning!",
+      "overlap_with": {}
+    }
+  ],
+  "outro": {
+    "text": "Thanks for joining us today as we explored some of life\u2019s biggest mistakes. Remember, it's never too late to learn from them and make better choices! Visit us at www.indapoint.com or drop us an email at info@indapoint.com. Connect with us on social media at 'indapoint' on LinkedIn or '@indapoint' on Twitter. Until next time, keep growing and learning!",
+    "speaker": "Jessica"
+  },
+  "speakers": [
+    "Jessica",
+    "Ken"
+  ]
+}

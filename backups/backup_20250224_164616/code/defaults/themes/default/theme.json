@@ -1,0 +1,16 @@
+{
+    "fonts": {
+        "title": {
+            "color": "#EBE0E2"
+        },
+        "subtitle": {
+            "color": "#eab676"
+        },
+        "footer": {
+            "color": "#eeeee4"
+        }
+    },
+    "backgrounds": {
+        "image": "video_creator/defaults/bgimages/bg1.jpeg"
+    }
+}

@@ -1,0 +1,75 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+heygen_monitor.log
+video_creation.log
+conversation.log
+
+# Database
+*.sqlite3
+*.db
+dump.rdb
+
+# Media files
+media/
+uploads/
+defaults/videos/
+defaults/audio/
+defaults/bgimages/
+defaults/bgmusic/
+defaults/images/
+defaults/speakers/
+*.mp3
+*.mp4
+*.wav
+*.webp
+*.jpg
+*.jpeg
+*.png
+videos/
+
+# Backup files
+*.bak
+*BK.*
+*BK/
+test_*
+
+# System Files
+.DS_Store
+Thumbs.db
