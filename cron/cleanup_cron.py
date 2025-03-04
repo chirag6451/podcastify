@@ -36,27 +36,50 @@ def cleanup_youtube_data(user_email: str, db_conn) -> None:
         # Get all YouTube videos for user
         with db_conn.cursor() as cur:
             cur.execute("""
-                SELECT youtube_video_id 
+                SELECT youtube_video_id, video_file_path, thumbnail_path 
                 FROM youtube_video_metadata 
                 WHERE customer_id = %s 
                 AND youtube_video_id IS NOT NULL
             """, (user_email,))
             videos = cur.fetchall()
             
-            # Delete each video from YouTube
+            # Delete each video from YouTube and local files
             for video in videos:
                 try:
-                    youtube_id = video[0]
-                    youtube.service.videos().delete(id=youtube_id).execute()
-                    logger.info(f"Deleted YouTube video {youtube_id} for user {user_email}")
+                    youtube_id, video_path, thumbnail_path = video
+                    
+                    # Delete from YouTube
+                    try:
+                        youtube.service.videos().delete(id=youtube_id).execute()
+                        logger.info(f"Deleted YouTube video {youtube_id} for user {user_email}")
+                    except Exception as e:
+                        logger.error(f"Error deleting YouTube video {youtube_id}: {e}")
+                    
+                    # Delete local video file if exists
+                    if video_path and os.path.exists(video_path):
+                        try:
+                            os.remove(video_path)
+                            logger.info(f"Deleted local video file {video_path}")
+                        except Exception as e:
+                            logger.error(f"Error deleting local video file {video_path}: {e}")
+                    
+                    # Delete local thumbnail if exists
+                    if thumbnail_path and os.path.exists(thumbnail_path):
+                        try:
+                            os.remove(thumbnail_path)
+                            logger.info(f"Deleted local thumbnail {thumbnail_path}")
+                        except Exception as e:
+                            logger.error(f"Error deleting local thumbnail {thumbnail_path}: {e}")
+                            
                 except Exception as e:
-                    logger.error(f"Error deleting YouTube video {youtube_id}: {e}")
+                    logger.error(f"Error processing video cleanup: {e}")
             
             # Delete all YouTube records from database
             cur.execute("""
                 DELETE FROM youtube_video_metadata WHERE customer_id = %s;
                 DELETE FROM customer_youtube_channels WHERE customer_id = %s;
-            """, (user_email, user_email))
+                DELETE FROM customer_youtube_playlists WHERE customer_id = %s;
+            """, (user_email, user_email, user_email))
             db_conn.commit()
             logger.info(f"Deleted all YouTube records for user {user_email}")
             
@@ -110,6 +133,19 @@ def cleanup_local_files(user_email: str) -> None:
                     logger.info(f"Deleted local file {file_path}")
                 except Exception as e:
                     logger.error(f"Error deleting local file {file_path}: {e}")
+                    
+        # Delete old YouTube thumbnails
+        thumbnail_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static", "thumbnails")
+        if os.path.exists(thumbnail_dir):
+            for filename in os.listdir(thumbnail_dir):
+                if filename.startswith(f"{user_email}_"):
+                    file_path = os.path.join(thumbnail_dir, filename)
+                    try:
+                        os.remove(file_path)
+                        logger.info(f"Deleted thumbnail file {file_path}")
+                    except Exception as e:
+                        logger.error(f"Error deleting thumbnail file {file_path}: {e}")
+                        
     except Exception as e:
         logger.error(f"Error cleaning up local files for user {user_email}: {e}")
 

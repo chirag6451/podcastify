@@ -1,1 +1,0 @@
-# This directory contains example scripts for using the video_creator package 

@@ -1,12 +1,41 @@
 import os
 import logging
+import re
 from typing import Dict, List, Optional, Any
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
+from googleapiclient.http import MediaFileUpload, HttpError
 from google.oauth2.credentials import Credentials
 from create_audio.db_utils import PodcastDB
 
 logger = logging.getLogger(__name__)
+
+def clean_text_for_youtube(text: str, is_title: bool = False) -> str:
+    """Clean text by removing HTML tags and markdown formatting
+    
+    Args:
+        text (str): Text to clean
+        is_title (bool): If True, applies title-specific rules (like length limit)
+    """
+    if not text:
+        return ""
+    
+    # Remove HTML tags
+    text = re.sub(r'<[^>]+>', '', text)
+    
+    # Convert markdown links to plain text
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
+    
+    # Remove special characters that might cause issues
+    text = text.replace('\n\n', '\n')  # Replace double newlines
+    text = text.replace('\\n', '\n')   # Replace escaped newlines
+    text = text.replace('|', '-')      # Replace pipe with dash
+    text = text.strip()
+    
+    # Only apply length limit for titles (YouTube has a 100 character limit for titles)
+    if is_title and len(text) > 100:
+        text = text[:97] + "..."
+    
+    return text
 
 class YouTubeManager:
     """Manages YouTube API operations"""
@@ -28,7 +57,8 @@ class YouTubeManager:
                         refresh_token,
                         token_uri,
                         client_id,
-                        client_secret
+                        client_secret,
+                        token_expiry
                     FROM google_auth 
                     WHERE email = %s
                 """, (self.user_email,))
@@ -36,7 +66,7 @@ class YouTubeManager:
                 if not result:
                     raise Exception(f"No Google credentials found for {self.user_email}")
                 
-                access_token, refresh_token, token_uri, client_id, client_secret = result
+                access_token, refresh_token, token_uri, client_id, client_secret, token_expiry = result
                 
                 # Create credentials
                 creds = Credentials(
@@ -48,6 +78,34 @@ class YouTubeManager:
                     scopes=["https://www.googleapis.com/auth/youtube.upload",
                            "https://www.googleapis.com/auth/youtube"]
                 )
+                
+                # Check if token needs refresh
+                if not creds.valid:
+                    logger.info(f"Refreshing expired token for user {self.user_email}")
+                    try:
+                        # Refresh the token
+                        creds.refresh(None)
+                        
+                        # Update the database with new token
+                        cur.execute("""
+                            UPDATE google_auth 
+                            SET access_token = %s,
+                                token_expiry = CURRENT_TIMESTAMP + INTERVAL '1 hour'
+                            WHERE email = %s
+                        """, (creds.token, self.user_email))
+                        conn.commit()
+                        logger.info(f"Successfully refreshed token for user {self.user_email}")
+                    except Exception as e:
+                        logger.error(f"Failed to refresh token for user {self.user_email}: {e}")
+                        # Mark credentials as invalid
+                        cur.execute("""
+                            UPDATE google_auth 
+                            SET access_token = NULL,
+                                token_expiry = NULL
+                            WHERE email = %s
+                        """, (self.user_email,))
+                        conn.commit()
+                        raise Exception(f"Token refresh failed for {self.user_email}. Please re-authenticate.")
                 
                 # Build service
                 return build("youtube", "v3", credentials=creds)
@@ -199,12 +257,41 @@ class YouTubeManager:
             
     def upload_video(self, video_path: str, channel_id: str, playlist_id: Optional[str] = None,
                     title: Optional[str] = None, description: Optional[str] = None,
-                    privacy_status: str = "private", upload_id: Optional[int] = None) -> Dict:
-        """Upload a video to YouTube. This should only be called by the cron job after approval."""
+                    privacy_status: str = "public", upload_id: Optional[int] = None) -> Optional[Dict]:
+        """Upload a video to YouTube
+        
+        Args:
+            video_path: Path to the video file
+            channel_id: YouTube channel ID to upload to
+            playlist_id: Optional playlist ID to add the video to
+            title: Video title
+            description: Video description
+            privacy_status: Video privacy status ('public', 'private', or 'unlisted'), defaults to 'public'
+            upload_id: Optional ID for tracking the upload
+            
+        Returns:
+            Dict containing video information if successful, None if failed
+        """
         try:
             if not os.path.exists(video_path):
-                raise Exception(f"Video file not found: {video_path}")
+                raise FileNotFoundError(f"Video file not found: {video_path}")
 
+            # Clean title and description
+            clean_title = clean_text_for_youtube(title, is_title=True) if title else "Untitled Video"
+            clean_description = clean_text_for_youtube(description, is_title=False) if description else ""
+
+            body = {
+                "snippet": {
+                    "title": clean_title,
+                    "description": clean_description,
+                    "categoryId": "22"  # People & Blogs category
+                },
+                "status": {
+                    "privacyStatus": privacy_status,
+                    "selfDeclaredMadeForKids": False
+                }
+            }
+            
             # Get channel credentials
             channel_creds = self._get_channel_credentials(channel_id)
             if not channel_creds:
@@ -214,17 +301,6 @@ class YouTubeManager:
             self.service = build('youtube', 'v3', credentials=channel_creds)
 
             # Prepare the video upload
-            body = {
-                'snippet': {
-                    'title': title,
-                    'description': description,
-                },
-                'status': {
-                    'privacyStatus': privacy_status,
-                }
-            }
-
-            # Upload the video
             insert_request = self.service.videos().insert(
                 part=','.join(body.keys()),
                 body=body,
@@ -249,6 +325,26 @@ class YouTubeManager:
                 part="status,snippet,contentDetails,statistics",
                 id=response["id"]
             ).execute()['items'][0]
+
+            # Upload thumbnail if available
+            db = PodcastDB()
+            with db.get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT selected_thumbnail_path 
+                        FROM youtube_video_metadata 
+                        WHERE id = %s
+                    """, (upload_id,))
+                    result = cur.fetchone()
+                    if result and result[0] and os.path.exists(result[0]):
+                        try:
+                            self.service.thumbnails().set(
+                                videoId=response["id"],
+                                media_body=MediaFileUpload(result[0], mimetype='image/jpeg', resumable=True)
+                            ).execute()
+                            logger.info(f"Successfully uploaded thumbnail for video {response['id']}")
+                        except Exception as e:
+                            logger.error(f"Error uploading thumbnail: {e}")
 
             # Add to playlist if specified
             if playlist_id and playlist_id != "string":

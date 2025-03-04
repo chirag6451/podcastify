@@ -81,8 +81,8 @@ Create a natural, emotionally expressive conversation podcast intro for the give
 Follow these rules:
 
 1. Introduction and Structure:
-    - Create a professional intro identifying the subject and setting context,base on given topic and context, for exmmple if context is about a blog post, then the intro should be about blog post, if it is about given topic, then the intro should be about the given topic, if it is about a podcast, then the intro should be about the podcast. Let us detail topic being discussed in the intro and present in question format to create curiosity and interest
-    - introduce yourself as host of the podcast as per the given host name
+    - Create a professional intro identifying the subject and setting context,base on given topic and context, for exmmple if context is about a discussion then it should refrence as disusscsion, if it is  a blog post, then the intro should be about blog post, if it is about given topic, then the intro should be about the given topic, if it is about a podcast, then the intro should be about the podcast. Let us detail topic being discussed in the intro and present in question format to create curiosity and interest
+    - introduce yourself as a topic expert with personalise introduction base on name provided and topic, if context is discssion, metion that your team team is discussing the topic, do not assume or predict the name of the podcast as per the given host name
     - do not assume or predict host name, it should be as per the given host name, if not provided, then do not assume or predict
     - the speakers in the conversation, they are not the hosts
     - Let us detail topic being discussed in the intro and present in question format to create curiosity and interest
@@ -119,13 +119,13 @@ class PodcatTranscript(BaseModel):
  podcast_intro: str
 
 
-def get_podcast_intro(topic: str, context: str, host_name: str):
+def get_podcast_intro(topic: str, context: str, expert_name: str):
     try:
         completion = client.beta.chat.completions.parse(
             model=os.environ.get("OPENAI_MODEL"),
             messages=[
                 {"role": "system", "content": system_prompt_podcast_intro},
-                {"role": "user", "content": f"The topic is {topic} and the context is {context} and the host name is {host_name}"},
+                {"role": "user", "content": f"The topic is {topic} and the context is {context} and the expert name is {expert_name}"},
             ],
             response_format=PodcatTranscript,
         )
@@ -134,6 +134,92 @@ def get_podcast_intro(topic: str, context: str, host_name: str):
         if message.content:
             logging.info("Successfully retrieved details")
             return message.content
+        else:
+            logging.error("Failed to retrieve details")
+            return None
+    except Exception as e:
+        logging.error(f"An error occurred: {str(e)}")
+        return None
+    
+
+#create a function to create SEO friendly title and description for the youtbe podcast video based on the given topic and context
+
+class YoutubeSeoTitleAndDescription(BaseModel):
+    title: str
+    subtitle: str
+    description: str
+    thumbnail_title: str
+    thumbnail_subtitle: str
+    thumbnail_footer: str
+    
+system_prompt_youtube_seo_title_and_description = f"""You are an expert SEO content writer.
+Create a SEO friendly title and description for the given topic and context and consider the keywords provided to create the title and description with refrence to business details provided. The obejctive is to imporove the search engine ranking of the video and also lead traffic to the business website. Consider the keywords provided with business details to create the title and description.
+
+Follow these rules:
+
+- General Guidelines:
+    Create valid HTML llink to website in First 5 lines with soft
+    Make the First 5 Lines Count
+    Brief teaser for video content*
+    Contact and Social Links
+    Longer Description*
+    References mentioned in video*
+    Link to blog
+
+1. Title:
+    - Create a SEO friendly title for the given topic and context
+    - The title should be 100 characters long
+    - The title should be SEO friendly and unique
+    - The title should be catchy
+    - The title should be descriptive
+2. Description:
+    - Create a SEO friendly description for the given topic and context
+    - The description should be at least 250 words  long
+    - The description should be SEO friendly and consider the keywords
+    - The description should be unique
+    - The description should be catchy
+    - The description should be descriptive
+    - The description should have CTA (Call to Action) for the user to subscribe or listen
+3. thumbnail_title:
+    - get me short relevant title for thumbnail that can fit on youtube thumbnail size
+    - The title should catch the attention of the viewer
+4. thumbnail_subtitle:
+    - get me short relevant subtitle for thumbnail that can fit on youtube thumbnail size
+    - Subtitle should be short and catch the attention of the viewer 
+    - The subtitle should catch the attention of the viewer
+5. thumbnail_footer:
+    - get me short relevant footer for thumbnail that can fit on youtube thumbnail size
+    - Footer should contanint website link and social links and email
+    - The footer should be short and catch the attention of the viewer 
+    - The footer should catch the attention of the viewer
+
+"""
+
+
+def create_youtube_seo_title_and_description(topic: str, context: str, business_details: dict):
+    try:
+        completion = client.beta.chat.completions.parse(
+            model=os.environ.get("OPENAI_MODEL"),
+            messages=[
+                {"role": "system", "content": system_prompt_youtube_seo_title_and_description},
+                {"role": "user", "content": f"The topic is {topic} and the context is {context}. Business details: {json.dumps(business_details)}"},
+            ],
+            response_format=YoutubeSeoTitleAndDescription,
+        )
+        message = completion.choices[0].message
+        logging.info(f"Message from openai about youtube seo title and description: {message}")
+        if message.content:
+            logging.info("Successfully retrieved details")
+            title_and_description = json.loads(message.content)
+            title = title_and_description["title"]
+            description = title_and_description["description"]
+            subtitle = title_and_description["subtitle"]
+            thumbnail_title = title_and_description["thumbnail_title"]
+            thumbnail_subtitle = title_and_description["thumbnail_subtitle"]
+            thumbnail_footer = title_and_description["thumbnail_footer"]
+            
+           
+            return title, description, subtitle, thumbnail_title, thumbnail_subtitle, thumbnail_footer
         else:
             logging.error("Failed to retrieve details")
             return None

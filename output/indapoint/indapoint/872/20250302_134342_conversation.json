@@ -1,0 +1,45 @@
+{
+  "topic": "AI and Business Where do we go from here?",
+  "intro": {
+    "text": "Welcome to the IndaPoint Technologies podcast, where we delve into the cutting-edge intersection of AI and business! Today, we're unraveling the question: 'Where do we go from here?' As businesses globally integrate AI, what's next in this ever-evolving landscape? Our speakers will discuss the transformative power of AI, potential challenges, and innovative pathways. Stay tuned to understand how AI can redefine your business strategies!",
+    "speaker": "Eva Grace"
+  },
+  "conversation": [
+    {
+      "order": 0,
+      "speaker": "Eva Grace",
+      "text": "Welcome to the IndaPoint Technologies podcast, where we delve into the cutting-edge intersection of AI and business! Today, we're unraveling the question: 'Where do we go from here?' As businesses globally integrate AI, what's next in this ever-evolving landscape? Our speakers will discuss the transformative power of AI, potential challenges, and innovative pathways. Stay tuned to understand how AI can redefine your business strategies!",
+      "overlap_with": {}
+    },
+    {
+      "order": 1,
+      "speaker": "Eva Grace",
+      "text": "Oscar, with AI becoming a cornerstone in various industries, do you think businesses are truly ready for what's next?",
+      "overlap_with": {
+        "Oscar Davis": "Absolutely!"
+      }
+    },
+    {
+      "order": 2,
+      "speaker": "Oscar Davis",
+      "text": "Indeed, Eva, but readiness requires more than just technological adoption. It's about creating an ecosystem that supports innovation and collaboration. How do we ensure businesses not only adapt but thrive in this AI-driven world?",
+      "overlap_with": {
+        "Eva Grace": "That's the key!"
+      }
+    },
+    {
+      "order": 4,
+      "speaker": "Eva Grace",
+      "text": "Thank you for joining us on this insightful journey through AI and business. To remain at the forefront of technological advancements, reach out to us at IndaPoint Technologies. Visit our website at www.indapoint.com, or connect with us on LinkedIn and Twitter @indapoint. We'll catch you next time!",
+      "overlap_with": {}
+    }
+  ],
+  "outro": {
+    "text": "Thank you for joining us on this insightful journey through AI and business. To remain at the forefront of technological advancements, reach out to us at IndaPoint Technologies. Visit our website at www.indapoint.com, or connect with us on LinkedIn and Twitter @indapoint. We'll catch you next time!",
+    "speaker": "Eva Grace"
+  },
+  "speakers": [
+    "Eva Grace",
+    "Oscar Davis"
+  ]
+}

@@ -3,6 +3,7 @@ import sys
 import logging
 import tempfile
 import random
+from utils.file_writer import get_output_path
 from video_creator.hygen import HeyGenAPI
 from moviepy.editor import (
     VideoFileClip, AudioFileClip, TextClip, CompositeVideoClip, 
@@ -20,7 +21,7 @@ import json
 from profile_utils import ProfileUtils
 from video_creator.utils.podcast_short_video_creator import create_bumper_hygen_short_video, create_podcast_short_video
 from video_creator.utils.video_segment_creator import create_video_segment
-import datetime
+from datetime import datetime
 from config import DEFAULT_INTRO_PATH, DEFAULT_OUTRO_PATH
 from video_creator.utils.video_utils import create_final_video_from_paths
 from .db_utils import VideoDB  # Import VideoDB directly from db_utils
@@ -331,7 +332,8 @@ class PodcastVideoCreator:
                            main_audio, 
                            welcome_audio_path,
                            config,
-                           request_dict
+                           request_dict,
+                           thumbnail_dir
                          ):
         """Create a short video segment using a portion of the main audio"""
         
@@ -396,6 +398,7 @@ class PodcastVideoCreator:
                 welcome_audio_path=welcome_audio_path,
                 config=config,
                 request_dict=request_dict,
+                thumbnail_dir=thumbnail_dir
                
             )
             
@@ -403,9 +406,7 @@ class PodcastVideoCreator:
             logger.debug(f"Loading short video from path: {short_video_path}")
             short_video_clip = VideoFileClip(short_video_path)
             
-            print("--------------------------------\n")
-            print(f"short_video_clip: {short_video_path}")  
-            print("--------------------------------\n")
+         
             # Set the final audio for the short video
             short_video_clip = short_video_clip.set_audio(final_audio)
             
@@ -490,8 +491,8 @@ class PodcastVideoCreator:
         try:
             import json
             # Set paths
-            print("on top of the world")
-            print(json.dumps(config, indent=4))
+            # print("on top of the world")
+            # print(json.dumps(config, indent=4))
             background_video_path = config['background_video_path']
         
             #self.background_video_path = os.path.dirname(config['background_video_path'])
@@ -543,6 +544,17 @@ class PodcastVideoCreator:
             # # Set output filename in config
             config['output_filename'] = os.path.join(config['output_dir'], 'podcast_short_video.mp4')
             
+                
+                
+            thumbnail_file_name,thumbnail_dir = get_output_path(
+                            filename="",
+                            profile_name=request_dict['profile_name'],
+                            customer_id=request_dict['customer_id'],
+                            job_id=job_id,
+                            theme=request_dict.get('theme', 'default')
+                )
+                        
+           
             #if hygen video is set than we use that as short video and we do not create short video
             if config['heygen_short_video']:
                 logger.info("Creating heygen video...")
@@ -565,7 +577,8 @@ class PodcastVideoCreator:
                     height=720,
                     # Background parameters (defaults to video background)
                     background_type="video",
-                    background_asset_id="f978e4db1f2743d3a4001c0b3e6b6bb7",
+                    #old f978e4db1f2743d3a4001c0b3e6b6bb7
+                    background_asset_id="47aaef18491a477eadb192b0bf76b14c",
                     play_style="loop",
                     fit="cover",
                     # Output and polling parameters
@@ -581,20 +594,30 @@ class PodcastVideoCreator:
                 #also update is_heygen_video to true in database
                 self.db.update_heygen_video_flag(job_id=int(job_id), is_heygen_video=True)
                 logger.info(f"Heygen video ID: {heygen_video_id}")
+                # we will still create short video to get thumbnail paths
+                thumbnail_paths,short_video_path = self.create_short_video(
+                    main_audio=audio_path,
+                    welcome_audio_path=welcome_audio_path,
+                    config=config,
+                    thumbnail_dir=thumbnail_dir,
+                    request_dict=request_dict
+                    
+                )
+                
             elif config['short_video']:
                 thumbnail_paths,short_video_path = self.create_short_video(
                     main_audio=audio_path,
                     welcome_audio_path=welcome_audio_path,
                     config=config,
-                    request_dict=request_dict
+                    request_dict=request_dict,
+                    thumbnail_dir=thumbnail_dir,
                 )
 
-                logger.info(f"Short video created at: {short_video_path}")
-                #final_clips.append(short_video)
-            #let us store this in database
-                self.db.add_specific_path(job_id=int(job_id), path_type='short_video_path', path_value=short_video_path)
-            
-            
+            logger.info(f"Short video created at: {short_video_path}")
+            #final_clips.append(short_video)
+        #let us store this in database
+            self.db.add_specific_path(job_id=int(job_id), path_type='short_video_path', path_value=short_video_path)
+
             if config['hygen_bumper']:
                 logger.info("Creating heygen bumper video...")
                 bumper_video_path = create_bumper_hygen_short_video(
@@ -670,7 +693,23 @@ class PodcastVideoCreator:
                 self.db.add_specific_path(job_id=int(job_id), path_type='outro_video_path', path_value=outro_video_path)
                 logger.info("Outro video added successfully")
             
-         
+            self.db.update_video_path_column(job_id=int(job_id),
+            column_name='welcome_voiceover_text', 
+            value=config['welcome_voiceover'],
+            )
+            
+            # Update conversation_json with proper JSON data
+            conversation_data = {
+                "context": config.get('context', {}),
+                "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            #conversation_data is path we need to convert it to json
+            conversation_data = json.dumps(conversation_data)
+            self.db.update_video_path_column(job_id=int(job_id),
+                column_name='conversation_json', 
+                value=conversation_data
+            )
+            
             # Get all video paths from database
             video_paths = self.db.get_video_paths_in_order(int(job_id))
         
@@ -681,7 +720,7 @@ class PodcastVideoCreator:
             # output_path = create_final_video_from_paths(video_paths, config, job_id)
         
             logger.info("Video creation completed successfully and recorded in database!")
-            return job_id
+            return job_id,thumbnail_paths
 
         except Exception as e:
             logger.error(f"Error creating video: {str(e)}")

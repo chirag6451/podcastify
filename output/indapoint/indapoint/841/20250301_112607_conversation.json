@@ -1,0 +1,45 @@
+{
+  "topic": "AI-Powered Business: Hype vs. Reality\u2013 Discussing realistic expectations versus common misconceptions about AI in business",
+  "intro": {
+    "text": "Welcome to IndaPoint Technologies Podcast, where today we delve into the topic of AI-Powered Business: Hype vs. Reality. In a world buzzing with talk about Artificial Intelligence and its transformative potential, how much of it is realistic, and what remains mere hype? That's precisely what we're exploring today. Join us as we discuss the real impact of AI, debunking some common misconceptions and arriving at a clearer understanding of what businesses can truly expect from this revolutionary technology.",
+    "speaker": "Jessica"
+  },
+  "conversation": [
+    {
+      "order": 0,
+      "speaker": "Jessica",
+      "text": "Welcome to IndaPoint Technologies Podcast, where today we delve into the topic of AI-Powered Business: Hype vs. Reality. In a world buzzing with talk about Artificial Intelligence and its transformative potential, how much of it is realistic, and what remains mere hype? That's precisely what we're exploring today. Join us as we discuss the real impact of AI, debunking some common misconceptions and arriving at a clearer understanding of what businesses can truly expect from this revolutionary technology.",
+      "overlap_with": {}
+    },
+    {
+      "order": 1,
+      "speaker": "Jessica",
+      "text": "You know, Ken, AI is being hailed as the 'game-changer' in business circles, but... do we need a reality check?",
+      "overlap_with": {
+        "Ken": "Absolutely!"
+      }
+    },
+    {
+      "order": 2,
+      "speaker": "Ken",
+      "text": "Indeed, Jessica, while AI does have the potential to 'transform' certain industries, it's also surrounded by a LOT of hypes. Many businesses jump in expecting magic solutions overnight without considering the groundwork needed. Businesses must understand the behind-the-scenes efforts required to get AI to work effectively.",
+      "overlap_with": {
+        "Jessica": "That's so true!"
+      }
+    },
+    {
+      "order": 4,
+      "speaker": "Jessica",
+      "text": "Thanks for tuning in to today's conversation! Remember, the key to leveraging AI is understanding its capabilities and limitations. For more insights, follow us on LinkedIn at IndaPoint or on Twitter @indapoint. Feel free to reach out to us at info@indapoint.com if you have questions. Thanks for listening!",
+      "overlap_with": {}
+    }
+  ],
+  "outro": {
+    "text": "Thanks for tuning in to today's conversation! Remember, the key to leveraging AI is understanding its capabilities and limitations. For more insights, follow us on LinkedIn at IndaPoint or on Twitter @indapoint. Feel free to reach out to us at info@indapoint.com if you have questions. Thanks for listening!",
+    "speaker": "Jessica"
+  },
+  "speakers": [
+    "Jessica",
+    "Ken"
+  ]
+}

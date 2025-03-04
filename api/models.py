@@ -36,6 +36,8 @@ class PodcastJob(Base):
     audio_task_id = Column(String, nullable=True)
     video_task_id = Column(String, nullable=True)
     output_path = Column(String, nullable=True)
+    youtube_channel_id = Column(String(255), nullable=True)
+    youtube_playlist_id = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -51,6 +53,8 @@ class PodcastJob(Base):
             "audio_task_id": self.audio_task_id,
             "video_task_id": self.video_task_id,
             "output_path": self.output_path,
+            "youtube_channel_id": self.youtube_channel_id,
+            "youtube_playlist_id": self.youtube_playlist_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }

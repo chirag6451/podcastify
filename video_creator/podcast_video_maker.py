@@ -1,9 +1,13 @@
 from typing import Optional, Tuple, List
 import os
 from .podcast_video_creator import PodcastVideoCreator
+from utils.logger_utils import PodcastLogger
 
 # Get the package root directory
 PACKAGE_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+# Initialize logger
+logger = PodcastLogger("video_creator")
 
 class PodcastVideoMaker:
     """Simple interface to create podcast videos"""
@@ -11,7 +15,7 @@ class PodcastVideoMaker:
     def __init__(self):
         self._creator = PodcastVideoCreator()
     
-    def create_video(self, config, audio_path: str, welcome_audio_path: str, job_id: str,request_dict: dict) -> Tuple[str, Optional[List[str]]]:
+    def create_video(self, config, audio_path: str, welcome_audio_path: str, job_id: str, request_dict: dict) -> Tuple[str, Optional[List[str]]]:
         """
         Create a podcast video with the given configuration.
         
@@ -27,11 +31,11 @@ class PodcastVideoMaker:
         """
         # Ensure output directory exists
         os.makedirs(config['output_dir'], exist_ok=True)
+        
+        logger.info(f"Starting video creation process for job {job_id}")
        
-        
         # Create the video using PodcastVideoCreator
-        
-        output_path = self._creator.create_video(
+        output_path, thumbnail_paths = self._creator.create_video(
             audio_path=audio_path,
             welcome_audio_path=welcome_audio_path,
             config=config,
@@ -39,12 +43,11 @@ class PodcastVideoMaker:
             request_dict=request_dict
         )
         
-        # Get thumbnail paths from the output directory
-        thumbnail_dir = os.path.join(config['output_dir'], "thumbnails")
-        thumbnail_paths = None
-        if config['create_thumbnails'] and os.path.exists(thumbnail_dir):
-            thumbnail_paths = [os.path.join(thumbnail_dir, f) for f in os.listdir(thumbnail_dir) if f.endswith('.jpg')]
-        
+        logger.info(f"Video creation completed for job {job_id}")
+        logger.info(f"Output video path: {output_path}")
+        if thumbnail_paths:
+            logger.info(f"Generated {len(thumbnail_paths)} thumbnails")
+     
         return output_path, thumbnail_paths
 
 def create_podcast_video(

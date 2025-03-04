@@ -55,9 +55,17 @@ def generate_audio_files(conversation: Conversation, topic_dir: str, speakers: L
     
     # Create direct mapping of speaker name to voice_id
     voice_map = {s['name']: s['voice_id'] for s in speakers}
+    # Add fallback mapping for Speaker1/Speaker2 format
+    for i, s in enumerate(speakers, 1):
+        voice_map[f"Speaker{i}"] = s['voice_id']
+    
+    logger.info(f"Voice mapping: {voice_map}")
     
     for turn in conversation.turns:
         turn_start_time = time.time()
+        
+        # Get speaker voice ID, defaulting to first speaker if not found
+        speaker_voice_id = voice_map.get(turn.speaker, voice_map.get('Speaker1', speakers[0]['voice_id']))
         
         # Generate main speech audio
         main_audio_path = os.path.join(topic_dir, f"{turn.speaker}_{turn.order}.mp3")
@@ -65,14 +73,16 @@ def generate_audio_files(conversation: Conversation, topic_dir: str, speakers: L
             logger.info(f"Generating main audio for {turn.speaker} turn {turn.order}")
             try:
                 response = client.text_to_speech.convert(
-                    voice_id=voice_map[turn.speaker],
+                    voice_id=voice_map.get(turn.speaker, speakers[0]['voice_id']),
                     output_format="mp3_44100_128",
                     text=turn.text,
                     model_id="eleven_multilingual_v2"
                 )
-                audio_data = b"".join(chunk for chunk in response)
+                # Write chunks directly to file
                 with open(main_audio_path, "wb") as f:
-                    f.write(audio_data)
+                    for chunk in response:
+                        if chunk:  # Ensure chunk is not empty
+                            f.write(chunk)
                 time.sleep(1)  # Rate limiting
             except Exception as e:
                 logger.error(f"Error generating audio for {turn.speaker}: {str(e)}")
@@ -94,7 +104,7 @@ def generate_audio_files(conversation: Conversation, topic_dir: str, speakers: L
                     logger.info(f"Generating overlap audio for {overlap_speaker}")
                     try:
                         response = client.text_to_speech.convert(
-                            voice_id=voice_map[overlap_speaker],
+                            voice_id=voice_map.get(overlap_speaker, speakers[0]['voice_id']),
                             output_format="mp3_44100_128",
                             text=overlap_text,
                             model_id="eleven_multilingual_v2"
@@ -156,6 +166,47 @@ def CreateWelcomeAudio(welcome_text: str, welcome_audio_path: str, voice_id: str
 
     logger.success("Welcome audio generated")
     return welcome_audio_path
+
+def CreatePodcastIntroAudio(podcast_intro_voiceover: str, podcast_intro_audio_path: str, voice_id: str) -> str:
+    """Generate audio file for podcast intro."""
+    logger.info("Generating podcast intro audio...")
+    try:
+        # Generate audio in chunks
+        response = client.text_to_speech.convert(
+            voice_id=voice_id,
+            output_format="mp3_44100_128",
+            text=podcast_intro_voiceover,
+            model_id="eleven_multilingual_v2"
+        )
+
+        # Write chunks directly to file
+        with open(podcast_intro_audio_path, "wb") as f:
+            for chunk in response:
+                if chunk:  # Ensure chunk is not empty
+                    f.write(chunk)
+        
+        time.sleep(1)  # Rate limiting
+
+        # Verify the file was created and is valid
+        if not os.path.exists(podcast_intro_audio_path) or os.path.getsize(podcast_intro_audio_path) == 0:
+            raise Exception("Failed to create valid audio file")
+
+        # Try to load it with pydub to verify it's valid
+        try:
+            AudioSegment.from_mp3(podcast_intro_audio_path)
+        except Exception as e:
+            raise Exception(f"Generated audio file is invalid: {str(e)}")
+
+    except Exception as e:
+        logger.error(f"Error generating podcast intro audio: {str(e)}")
+        # Clean up invalid file if it exists
+        if os.path.exists(podcast_intro_audio_path):
+            os.remove(podcast_intro_audio_path)
+        raise
+
+    logger.success("Podcast intro audio generated")
+    return podcast_intro_audio_path
+
 
 def mix_conversation(conversation: Conversation, audio_files: Dict[str, str]) -> str:
     """Mix the conversation audio files with natural overlaps."""

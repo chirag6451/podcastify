@@ -11,7 +11,7 @@ BACKUP_DIR="$BACKUP_ROOT/$PROJECT_NAME"
 
 # Create timestamp for backup folder
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-if [ ! -d "$BACKUP_DIR" ] || [ -z "$(ls -A $BACKUP_DIR 2>/dev/null)" ]; then
+if [ ! -d "$BACKUP_DIR" ] || [ -z "$(ls -A $BACKUP_DIR)" ]; then
     CURRENT_BACKUP_DIR="$BACKUP_DIR/first_backup"
 else
     CURRENT_BACKUP_DIR="$BACKUP_DIR/backup_$TIMESTAMP"
@@ -25,6 +25,12 @@ perform_backup() {
     echo "Please provide backup details:"
     read -p "Enter backup description: " description
     read -p "Enter version/tag (optional): " version
+    
+    # Create a text file with backup comments in root folder
+    echo "Creating backup comments file..."
+    echo "Backup Description: $description" > "$PROJECT_ROOT/backup_comments.txt"
+    echo "Version/Tag: ${version:-"N/A"}" >> "$PROJECT_ROOT/backup_comments.txt"
+    echo "Date: $(date)" >> "$PROJECT_ROOT/backup_comments.txt"
     
     # Create backup directory
     mkdir -p "$CURRENT_BACKUP_DIR"/{code,sensitive}
@@ -64,15 +70,25 @@ perform_backup() {
     fi
     
     # Create manifest file
-    cat > "$CURRENT_BACKUP_DIR/manifest.txt" << EOF
-Backup Details:
---------------
-Date: $(date)
-Description: $description
-Version/Tag: ${version:-"N/A"}
-Files:
-$(ls -R "$CURRENT_BACKUP_DIR")
-EOF
+    echo "Creating manifest file..."
+    manifest_file="$CURRENT_BACKUP_DIR/manifest.txt"
+    {
+        echo "Backup Details:"
+        echo "--------------"
+        echo "Date: $(date)"
+        echo "Description: $description"
+        echo "Version/Tag: ${version:-"N/A"}"
+        echo ""
+        echo "Files:"
+        echo "------"
+        find "$CURRENT_BACKUP_DIR" -type f -not -name "manifest.txt" | sed "s|$CURRENT_BACKUP_DIR/||"
+    } > "$manifest_file"
+    
+    # Verify manifest was created
+    if [ ! -f "$manifest_file" ]; then
+        echo "Error: Manifest file was not created"
+        exit 1
+    fi
     
     # Create symlink to latest backup (only if this is not the first backup)
     if [[ "$CURRENT_BACKUP_DIR" != *"first_backup"* ]]; then

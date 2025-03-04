@@ -163,6 +163,66 @@ async def save_youtube_channel(
         logger.error(f"Error saving channel: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/youtube/playlists/{playlist_id}/save")
+async def save_youtube_playlist(
+    playlist_id: str,
+    channel_id: str = Query(..., description="YouTube channel ID"),
+    user_email: str = Query(..., description="User's email address")
+):
+    """Save a YouTube playlist for later use"""
+    try:
+        # First get the channel from our database
+        db = PodcastDB()
+        with db.get_connection() as conn:
+            with conn.cursor() as cur:
+                # Get channel ID from our database
+                cur.execute("""
+                    SELECT id 
+                    FROM customer_youtube_channels 
+                    WHERE customer_id = %s AND channel_id = %s
+                """, (user_email, channel_id))
+                channel_result = cur.fetchone()
+                if not channel_result:
+                    raise HTTPException(
+                        status_code=404, 
+                        detail=f"Channel {channel_id} not found. Please save it first using /youtube/channels/{channel_id}/save"
+                    )
+                db_channel_id = channel_result[0]
+                
+                # Get playlist details from YouTube
+                youtube = YouTubeManager(user_email)
+                playlists = youtube.list_playlists(channel_id)
+                playlist = next((p for p in playlists if p['id'] == playlist_id), None)
+                if not playlist:
+                    raise HTTPException(
+                        status_code=404,
+                        detail=f"Playlist {playlist_id} not found"
+                    )
+                
+                # Save playlist to database
+                cur.execute("""
+                    INSERT INTO customer_youtube_playlists
+                    (channel_id, playlist_id, playlist_title, playlist_description)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (channel_id, playlist_id) 
+                    DO UPDATE SET 
+                        playlist_title = EXCLUDED.playlist_title,
+                        playlist_description = EXCLUDED.playlist_description
+                    RETURNING id, playlist_id, playlist_title
+                """, (db_channel_id, playlist['id'], playlist['title'], playlist.get('description', '')))
+                saved_playlist = cur.fetchone()
+                conn.commit()
+                
+                return {
+                    "id": saved_playlist[0],
+                    "playlist_id": saved_playlist[1],
+                    "title": saved_playlist[2]
+                }
+                
+    except Exception as e:
+        logger.error(f"Error saving playlist: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/youtube/upload")
 async def upload_youtube_video(
     file: UploadFile = File(...),

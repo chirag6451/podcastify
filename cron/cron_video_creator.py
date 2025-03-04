@@ -103,6 +103,7 @@ def process_pending_videos():
                     theme=video.get('theme', 'default')
                 )
                 # Create final video using create_final_video_from_paths directly
+                thumbnail_dir = os.path.dirname(final_video_path)+"/thumbnails"
                 final_video_path = create_final_video_from_paths(
                     video_paths=video_paths,
                     config=video_config,
@@ -112,11 +113,12 @@ def process_pending_videos():
                     profile=video.get('profile')
                 )
                 
-                # Update status to completed with final path
-                video_db.update_video_status(
+                # Update final video path in database
+                video_db.update_final_video_path(job_id=job_id, final_video_path=final_video_path)
+                video_db.update_video_paths(
                     job_id=job_id,
-                    status="completed",
-                    final_video_path=final_video_path
+                    thumbnail_dir=thumbnail_dir,
+                    status='completed'
                 )
                 logger.info(f"Successfully created video for job {job_id}")
                 

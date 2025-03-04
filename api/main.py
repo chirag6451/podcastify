@@ -11,6 +11,7 @@ from typing import Dict, Optional
 from datetime import datetime
 from pathlib import Path
 import traceback
+from create_audio.db_utils import PodcastDB
 
 from celery_app.tasks import generate_audio_task, create_video_task
 from .logger import api_logger
@@ -20,6 +21,7 @@ from config import get_error_detail, format_error_message, OUTPUTS_DIR
 from profile_utils import ProfileUtils
 from .google_auth import router as google_auth_router
 from publish.routes import router as publish_router
+from .security import verify_api_key
 
 # Get package root directory
 PACKAGE_ROOT = str(Path(__file__).parent.parent)
@@ -62,11 +64,18 @@ profile_utils = ProfileUtils()
 class PodcastRequest(BaseModel):
     profile_name: str = "indapoint" 
     conversation_type: str = "podcast"
-    customer_id : str = "indapoint"
+    customer_id : str = "ahmedabadi@gmail.com"
+    youtube_channel_id:str="UCjsp-HaZASVdOq48PwMDTxg"
+    youtube_playlist_id: str="PLv8bszWmOt2PqiWc7y5kcpyUR84Wyy7YU"
+    
     topic: Optional[str] = "AI and Business Where do we go from here?"
     title: Optional[str] = "AI and Business"
     sub_title: Optional[str] = "AI and Business Dynamics"
     theme: Optional[str] = "dark"
+    voice_settings_num_turns: Optional[int] = 10
+    voice_settings_conversation_mood: Optional[str] = "neutral"
+    voice_settings_language: Optional[str] = "en"
+    voice_settings_voice_accent: Optional[str] = "neutral"
     video_type: Optional[str] = "podcast"
     main_video_style: Optional[str] = "video"
 
@@ -103,8 +112,8 @@ async def generic_exception_handler(request, exc):
 app.include_router(google_auth_router, tags=["auth"])
 app.include_router(publish_router, tags=["publish"])
 
-@app.post("/api/podcasts", response_model=PodcastResponse)
-async def create_podcast(request: PodcastRequest, db: Session = Depends(get_db)):
+@app.post("/api/podcasts/", response_model=PodcastResponse, tags=["podcasts"])
+async def create_podcast(request: PodcastRequest, db: Session = Depends(get_db), api_key: str = Depends(verify_api_key)):
     """Start podcast generation process"""
     try:
         api_logger.info(f"Received podcast creation request: {request.dict()}")
@@ -115,6 +124,9 @@ async def create_podcast(request: PodcastRequest, db: Session = Depends(get_db))
             conversation_type=request.conversation_type,
             topic=request.topic,
             customer_id=request.customer_id,
+            youtube_channel_id=request.youtube_channel_id,
+            youtube_playlist_id=request.youtube_playlist_id,
+            
             status="processing"
         )
         db.add(job)
@@ -134,7 +146,11 @@ async def create_podcast(request: PodcastRequest, db: Session = Depends(get_db))
         
         # Load profile configuration
         config, _ = load_profile(request.profile_name, request.theme)
-        
+
+        config['voice_settings_num_turns'] = request.voice_settings_num_turns
+        config['voice_settings_conversation_mood'] = request.voice_settings_conversation_mood
+        config['voice_settings_language'] = request.voice_settings_language
+        config['voice_settings_voice_accent'] = request.voice_settings_voice_accent 
         #let us create dict of all request vars and use that 
         request_dict = request.dict()
         
@@ -192,8 +208,8 @@ async def create_podcast(request: PodcastRequest, db: Session = Depends(get_db))
         db.commit()
         raise HTTPException(status_code=500, detail=error_detail)
             
-@app.get("/api/podcasts/{job_id}", response_model=PodcastResponse)
-async def get_podcast_status(job_id: int, db: Session = Depends(get_db)):
+@app.get("/api/podcasts/{job_id}", response_model=PodcastResponse, tags=["podcasts"])
+async def get_podcast_status(job_id: int, db: Session = Depends(get_db), api_key: str = Depends(verify_api_key)):
     """Get status of a podcast generation job"""
     job = db.query(PodcastJob).filter(PodcastJob.id == job_id).first()
     if not job:
@@ -206,8 +222,51 @@ async def get_podcast_status(job_id: int, db: Session = Depends(get_db)):
         output_path=job.output_path if job.status == "completed" else None
     )
 
-@app.get("/api/podcasts")
-async def list_podcasts(db: Session = Depends(get_db)):
+@app.get("/api/podcasts/", tags=["podcasts"])
+async def list_podcasts(db: Session = Depends(get_db), api_key: str = Depends(verify_api_key)):
     """List all podcast jobs"""
     jobs = db.query(PodcastJob).order_by(PodcastJob.created_at.desc()).all()
     return [job.to_dict() for job in jobs]
+
+@app.get("/api/google/auth/list")
+def list_google_auth():
+    """List all Google authenticated accounts with their status"""
+    try:
+        db = PodcastDB()
+        with db.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT 
+                        email,
+                        CASE 
+                            WHEN access_token IS NULL OR access_token = '' THEN false
+                            WHEN refresh_token IS NULL OR refresh_token = '' THEN false
+                            ELSE true
+                        END as is_valid,
+                        CASE 
+                            WHEN access_token IS NULL OR access_token = '' THEN 'No access token'
+                            WHEN refresh_token IS NULL OR refresh_token = '' THEN 'No refresh token'
+                            WHEN token_expiry IS NULL THEN 'Token expiry not set'
+                            WHEN token_expiry < NOW() THEN 'Token expired'
+                            ELSE 'Valid'
+                        END as status,
+                        token_expiry
+                    FROM google_auth
+                    ORDER BY email
+                """)
+                accounts = []
+                for row in cur.fetchall():
+                    email, is_valid, status, token_expiry = row
+                    accounts.append({
+                        "email": email,
+                        "is_valid": bool(is_valid),
+                        "status": status,
+                        "token_expiry": token_expiry.isoformat() if token_expiry else None
+                    })
+                return accounts
+    except Exception as e:
+        api_logger.error(f"Error listing Google auth accounts: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to list authenticated accounts"
+        )

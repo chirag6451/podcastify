@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Google Authentications</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .auth-card {
+            margin-bottom: 1rem;
+            border-left: 4px solid #4285f4;
+        }
+        .auth-status-valid {
+            color: #198754;
+        }
+        .auth-status-invalid {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Manage Google Authentications</h2>
+        
+        <!-- List of authenticated accounts -->
+        <div id="auth-list" class="mb-4">
+            <!-- Will be populated by JavaScript -->
+        </div>
+
+        <!-- Add new account button -->
+        <div class="mb-4">
+            <button id="add-account-btn" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add New Google Account
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://0.0.0.0:8011/api';
+
+        // Function to fetch and display authenticated accounts
+        async function loadAuthenticatedAccounts() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/google/auth/list`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const accounts = await response.json();
+                
+                const authList = document.getElementById('auth-list');
+                authList.innerHTML = ''; // Clear existing content
+                
+                if (accounts.length === 0) {
+                    authList.innerHTML = '<div class="alert alert-info">No authenticated accounts found</div>';
+                    return;
+                }
+                
+                accounts.forEach(account => {
+                    const card = document.createElement('div');
+                    card.className = 'card auth-card';
+                    
+                    card.innerHTML = `
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">${account.email}</h5>
+                                    <p class="card-text ${account.is_valid ? 'auth-status-valid' : 'auth-status-invalid'}">
+                                        Status: ${account.status}
+                                    </p>
+                                    ${account.token_expiry ? 
+                                        `<small class="text-muted">Token expires: ${new Date(account.token_expiry).toLocaleString()}</small>` 
+                                        : ''}
+                                </div>
+                                <div class="d-flex gap-2">
+                                    ${account.is_valid ? `
+                                        <button onclick="loginWithAccount('${account.email}')" 
+                                                class="btn btn-success">
+                                            Login & Create Podcast
+                                        </button>
+                                    ` : ''}
+                                    <button onclick="reauthorizeAccount('${account.email}')" 
+                                            class="btn ${account.is_valid ? 'btn-outline-primary' : 'btn-primary'}">
+                                        ${account.is_valid ? 'Reauthorize' : 'Authorize Now'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    authList.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading authenticated accounts:', error);
+                const authList = document.getElementById('auth-list');
+                authList.innerHTML = `
+                    <div class="alert alert-danger">
+                        Error loading accounts: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Function to handle reauthorization
+        function reauthorizeAccount(email) {
+            window.location.href = `${API_BASE_URL}/google/auth/start?email=${encodeURIComponent(email)}`;
+        }
+
+        // Function to login with an account
+        function loginWithAccount(email) {
+            // Store the selected email in localStorage
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('customerId', email);
+            
+            // Redirect to create podcast page
+            window.location.href = '/create_podcast.html';
+        }
+
+        // Handle add new account
+        document.getElementById('add-account-btn').addEventListener('click', () => {
+            window.location.href = `${API_BASE_URL}/google/auth/start`;
+        });
+
+        // Load accounts when page loads
+        document.addEventListener('DOMContentLoaded', loadAuthenticatedAccounts);
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

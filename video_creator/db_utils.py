@@ -1,10 +1,11 @@
 import os
 import psycopg2
-from psycopg2.extras import DictCursor
+from psycopg2.extras import DictCursor, Json
 from typing import Dict, List, Optional
 import logging
 import json
 from datetime import datetime
+import random
 
 logger = logging.getLogger(__name__)
 
@@ -75,56 +76,45 @@ class VideoDB:
                 ))
                 return cursor.fetchone()[0]
 
-    def update_video_paths(self, job_id: int, paths: Dict[str, str], video_config: Dict = None,
-                          theme: str = None, profile: str = None) -> bool:
-        """
-        Update video paths for a podcast job.
+    def update_video_paths(self, job_id: int, status: str = None, thumbnail_dir: str = None) -> bool:
+        """Update video paths for a podcast job.
         
         Args:
             job_id: ID of the podcast job
-            paths: Dictionary containing video paths to update
-            video_config: Optional dictionary containing video configuration
-            theme: Optional theme name
-            profile: Optional profile name
+            status: Status to update
+            thumbnail_dir: Thumbnail directory path
             
         Returns:
             True if update was successful, False if no record was found
         """
-        update_fields = []
-        values = []
-        
-        # Add path fields
-        for key, value in paths.items():
-            if value is not None:
-                update_fields.append(f"{key} = %s")
-                values.append(value)
-                
-        # Add config fields if provided
-        if video_config is not None:
-            update_fields.append("video_config = %s")
-            values.append(json.dumps(video_config))
-            
-        if theme is not None:
-            update_fields.append("theme = %s")
-            values.append(theme)
-            
-        if profile is not None:
-            update_fields.append("profile = %s")
-            values.append(profile)
-            
-        if not update_fields:
-            return False
-            
-        values.append(job_id)  # For WHERE clause
-        
-        with self.get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(f"""
-                    UPDATE video_paths 
-                    SET {", ".join(update_fields)}
-                    WHERE job_id = %s
-                """, tuple(values))
-                return cursor.rowcount > 0
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cur:
+                    update_fields = []
+                    values = []
+                    
+                    if status:
+                        update_fields.append("status = %s")
+                        values.append(status)
+                        
+                    if thumbnail_dir:
+                        update_fields.append("thumbnail_dir = %s")
+                        values.append(thumbnail_dir)
+                    
+                    if update_fields:
+                        values.append(job_id)  # Add job_id for WHERE clause
+                        cur.execute(f"""
+                            UPDATE video_paths 
+                            SET {', '.join(update_fields)}
+                            WHERE job_id = %s
+                        """, tuple(values))
+                        conn.commit()
+                        return True
+                    return False
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Error updating video paths for job {job_id}: {str(e)}")
+            raise e
 
     def get_video_paths(self, job_id: int) -> Dict:
         """
@@ -141,23 +131,22 @@ class VideoDB:
                 cursor.execute("""
                     SELECT 
                         intro_video_path,
-                        bumper_video_path,
                         short_video_path,
+                        bumper_video_path,
                         main_video_path,
                         outro_video_path,
                         welcome_video_avatar_path
-                    FROM video_paths
+                    FROM video_paths 
                     WHERE job_id = %s
                 """, (job_id,))
+                
                 result = cursor.fetchone()
-                
-                if not result:
-                    raise ValueError(f"No video paths found for job_id {job_id}")
-                
-                # Construct paths dictionary from individual columns and remove None values
-                paths = {k: v for k, v in result.items() if v is not None}
-                
-                return paths
+                if result:
+                    # Convert to regular dict and filter out None values
+                    paths = dict(result)
+                    return {k: v for k, v in paths.items() if v is not None}
+                logger.warning(f"No video paths found for job {job_id}")
+                return {}
 
     def delete_video_paths(self, job_id: int) -> bool:
         """
@@ -464,7 +453,7 @@ class VideoDB:
             with conn.cursor() as cursor:
                 if task_id:
                     cursor.execute("""
-                        SELECT task_id, heygen_video_id, status,video_path, thumbnail_path, created_at, last_updated_at
+                        SELECT task_id, heygen_video_id, status, video_path, thumbnail_path, created_at, last_updated_at
                         FROM heygen_videos
                         WHERE task_id = %s
                     """, (task_id,))
@@ -965,3 +954,175 @@ class VideoDB:
                         END
                     WHERE job_id = %s
                 """, (status, youtube_id, error_message, status, job_id))
+
+    def update_conversation_json(self, job_id: int, conversation_json: dict) -> None:
+        """Update conversation_json for a specific job_id in video_paths table.
+
+        Args:
+            job_id: The job ID to update
+            conversation_json: The conversation JSON data to store
+        """
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        UPDATE video_paths 
+                        SET conversation_json = %s
+                        WHERE job_id = %s
+                    """, (
+                        Json(conversation_json),
+                        job_id
+                    ))
+                    conn.commit()
+                    logger.info(f"Updated conversation_json for job_id {job_id}")
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Error updating conversation_json for job_id {job_id}: {str(e)}")
+            raise e
+
+    def update_video_path_column(self, job_id: int, column_name: str, value: any) -> None:
+        """Update any column in video_paths table for a specific job_id.
+
+        Args:
+            job_id: The job ID to update
+            column_name: Name of the column to update
+            value: Value to set in the column
+        """
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cur:
+                    # Handle JSON data type specifically
+                    if column_name == 'conversation_json':
+                        value = Json(value) if value else None
+                    
+                    # Use string formatting for column name but parameters for value to prevent SQL injection
+                    cur.execute(f"""
+                        UPDATE video_paths 
+                        SET {column_name} = %s
+                        WHERE job_id = %s
+                    """, (value, job_id))
+                    conn.commit()
+                    logger.info(f"Updated {column_name} for job_id {job_id}")
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Error updating {column_name} for job_id {job_id}: {str(e)}")
+            raise e
+
+    def update_final_video_path(self, job_id: int, final_video_path: str) -> None:
+        """Update final_video_path for a specific job_id in video_paths table.
+
+        Args:
+            job_id: The job ID to update
+            final_video_path: Path to the final video
+        """
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        UPDATE video_paths 
+                        SET final_video_path = %s
+                        WHERE job_id = %s
+                    """, (final_video_path, job_id))
+                    conn.commit()
+                    logger.info(f"Updated final_video_path for job_id {job_id}")
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Error updating final_video_path for job_id {job_id}: {str(e)}")
+            raise e
+
+    def add_thumbnail_path_1(self, job_id: int, thumbnail_path: str) -> None:
+        """Add thumbnail_path_1 for a given job ID.
+
+        Args:
+            job_id (int): Job ID to update
+            thumbnail_path (str): Path to the thumbnail
+        """
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE video_paths 
+                    SET thumbnail_path_1 = %s
+                    WHERE job_id = %s
+                """, (thumbnail_path, job_id))
+                conn.commit()
+
+    def get_thumbnail_paths(self, job_id: int) -> List[str]:
+        """Get thumbnail paths from thumbnail_path_1 column."""
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT thumbnail_path_1 FROM video_paths WHERE job_id = %s", (job_id,))
+                    result = cursor.fetchone()
+                if result and result[0]:
+                    # Convert PostgreSQL array string '{path1,path2}' to list ['path1', 'path2']
+                    return [p.strip() for p in result[0].strip('{}').split(',')]
+                return []
+        except Exception as e:
+            logger.error(f"Error getting thumbnail paths for job {job_id}: {str(e)}")
+            return []
+
+    def update_thumbnail_paths(self, job_id: int, thumbnail_paths: List[str]) -> None:
+        """
+        Update thumbnail_path_1 with new list of paths.
+        
+        Args:
+            job_id: The job ID to update
+            thumbnail_paths: List of thumbnail paths to store
+        """
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cursor:
+                    # Convert list to PostgreSQL array format
+                    array_str = '{' + ','.join(thumbnail_paths) + '}'
+                    cursor.execute("""
+                        UPDATE video_paths 
+                        SET thumbnail_path_1 = %s
+                        WHERE job_id = %s
+                    """, (array_str, job_id))
+                    conn.commit()
+                    logger.info(f"Updated thumbnail paths for job {job_id}")
+                    
+        except Exception as e:
+            logger.error(f"Error updating thumbnail paths for job {job_id}: {str(e)}")
+            raise
+
+    def select_random_thumbnail(self, job_id: int) -> Optional[str]:
+        """
+        Get all thumbnails for a job, select a random valid one and update youtube_video_metadata.
+        
+        Args:
+            job_id: The job ID to get thumbnails for
+            
+        Returns:
+            str: Selected thumbnail path or None if no valid thumbnails found
+        """
+        try:
+            # Get all thumbnails
+            thumbnails = self.get_thumbnail_paths(job_id)
+            
+            # Filter only existing thumbnails
+            valid_thumbnails = [path for path in thumbnails if os.path.exists(path)]
+            
+            if not valid_thumbnails:
+                logger.warning(f"No valid thumbnails found for job {job_id}")
+                return None
+                
+            # Select random thumbnail
+            selected_path = random.choice(valid_thumbnails)
+            
+            # Update youtube_video_metadata
+            with self.get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("""
+                        UPDATE youtube_video_metadata 
+                        SET selected_thumbnail_path = %s
+                        WHERE job_id = %s
+                    """, (selected_path, job_id))
+                    conn.commit()
+                    logger.info(f"Updated selected thumbnail for job {job_id}: {selected_path}")
+            
+            return selected_path
+            
+        except Exception as e:
+            logger.error(f"Error selecting random thumbnail for job {job_id}: {str(e)}")
+            return None

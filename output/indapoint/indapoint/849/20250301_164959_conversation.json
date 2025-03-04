@@ -1,0 +1,45 @@
+{
+  "topic": "AI-Powered Business: Hype vs. Reality\u2013 Discussing realistic expectations versus common misconceptions about AI in business",
+  "intro": {
+    "text": "Hello everyone, this is Eva Grace from IndaPoint Technologies! AI seems to be everywhere these days, doesn't it? From changing how we work to promising revolutionary business transformations. But is it all that it's hyped up to be? Today, Oscar Davis and I are delving into what's real and what's just smoke and mirrors in the world of AI. We'll be looking at practical business applications and some common myths that have been circulating. So, if you've been wondering about AI's true capabilities for your business, stay tuned!",
+    "speaker": "Eva Grace"
+  },
+  "conversation": [
+    {
+      "order": 0,
+      "speaker": "Eva Grace",
+      "text": "Hello everyone, this is Eva Grace from IndaPoint Technologies! AI seems to be everywhere these days, doesn't it? From changing how we work to promising revolutionary business transformations. But is it all that it's hyped up to be? Today, Oscar Davis and I are delving into what's real and what's just smoke and mirrors in the world of AI. We'll be looking at practical business applications and some common myths that have been circulating. So, if you've been wondering about AI's true capabilities for your business, stay tuned!",
+      "overlap_with": {}
+    },
+    {
+      "order": 1,
+      "speaker": "Eva Grace",
+      "text": "Oscar, it's such a thrilling time for technology. But with AI\u2014sometimes it feels as if the promises are bigger than the reality! What's your take on this?",
+      "overlap_with": {
+        "Oscar Davis": "Absolutely!"
+      }
+    },
+    {
+      "order": 2,
+      "speaker": "Oscar Davis",
+      "text": "You\u2019re spot on, Eva. It's an exciting era, but many businesses jump in thinking AI will magically solve ALL their problems. The truth is, AI is just a tool\u2014a powerful one, yes\u2014but it requires the right data and strategy. What do you think is the biggest misconception out there?",
+      "overlap_with": {
+        "Eva Grace": "For sure, for sure!"
+      }
+    },
+    {
+      "order": 4,
+      "speaker": "Eva Grace",
+      "text": "Thank you for tuning in to our podcast on the realistic role of AI in business. It's been wonderful unraveling these myths with Oscar. Remember, understanding the real capabilities of AI can make all the difference in achieving true innovation. If you'd like more insights or want to discuss technology solutions, visit our website at www.indapoint.com, or reach out via email at info@indapoint.com. Follow us on LinkedIn and Twitter @indapoint. Until next time, embrace technology with a curious mind!",
+      "overlap_with": {}
+    }
+  ],
+  "outro": {
+    "text": "Thank you for tuning in to our podcast on the realistic role of AI in business. It's been wonderful unraveling these myths with Oscar. Remember, understanding the real capabilities of AI can make all the difference in achieving true innovation. If you'd like more insights or want to discuss technology solutions, visit our website at www.indapoint.com, or reach out via email at info@indapoint.com. Follow us on LinkedIn and Twitter @indapoint. Until next time, embrace technology with a curious mind!",
+    "speaker": "Eva Grace"
+  },
+  "speakers": [
+    "Eva Grace",
+    "Oscar Davis"
+  ]
+}

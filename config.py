@@ -165,6 +165,9 @@ def format_error_message(error_detail: dict) -> str:
     
     return error_msg
 
+# Database configuration
+DATABASE_URL = f"postgresql://chiragahmedabadi:indapoint@localhost:5432/podcraftai"
+
 # Create required directories
 for directory in [OUTPUTS_DIR, LOGS_DIR, TEMP_DIR, DEFAULT_ASSETS_FOLDER, DEFAULT_BGMUSIC_PATH, DEFAULT_IMAGES_PATH, DEFAULT_VIDEOS_PATH, DEFAULT_FONTS_PATH, DEFAULT_VOICEOVER_PATH, DEFAULT_AUDIO_PATH, DEFAULT_SPEAKERS_PATH]:
     os.makedirs(directory, exist_ok=True)
@@ -185,11 +188,52 @@ DEFAULT_PROFILE = {
         "welcome_voice_id": "cgSgspJ2msm6clMCkdW9",
         "voice_id1": "cgSgspJ2msm6clMCkdW9",
         "voice_id2": "iP95p4xoKVk53GoZ742B",
-        "speaker1_name": "Jessica",
-        "speaker2_name": "Ken"
+        "speaker1_name": "Eva Grace",
+        "speaker2_name": "Oscar Davis"
     },
     "default_settings": {
         "num_turns": 5,
         "conversation_mood": "explaining in simple terms"
     }
 } 
+
+# #let us write a function that fetches business details by profile name and customer id, for time being we wil return hardcoded json as below "business_info": {
+#         "email": "info@indapoint.com",
+#         "name": "IndaPoint Technologies Private Limited",
+#         "social_media": {
+#             "linkedin": "indapoint",
+#             "twitter": "@indapoint"
+#         },
+#         "type": "IT Consulting Company",
+#         "website": "www.indapoint.com"
+#     },
+#     "business_info_email": "info@indapoint.com",
+#     "business_info_name": "IndaPoint Technologies Private Limited",
+#     "business_info_social_media_linkedin": "indapoint",
+#     "business_info_social_media_twitter": "@indapoint",
+#     "business_info_type": "IT Consulting Company",
+#     "business_info_website": "www.indapoint.com",
+#     "business_seo_keywords": "IT Consulting Company, IT Consulting Services, IT Consulting, IT Consulting Firm, IT Consulting Firm in India, IT Consulting Firm in Mumbai, IT Consulting Firm in Pune, IT Consulting Firm in Delhi, IT Consulting Firm in Gurgaon, IT Consulting Firm in Noida, IT Consulting Firm in Bangalore, IT Consulting Firm in Hyderabad, IT Consulting Firm in Chennai, IT Consulting Firm in Kolkata, IT Consulting Firm in Mumbai, IT Consulting Firm in Pune, IT Consulting Firm in Delhi, IT Consulting Firm in Gurgaon, IT Consulting Firm in Noida, IT Consulting Firm in Bangalore, IT Consulting Firm in Hyderabad, IT Consulting Firm in Chennai, IT Consulting Firm in Kolkata",
+
+def get_business_details(profile_name: str, customer_id: str) -> dict:
+    """Get business details by profile name and customer id"""
+    return {
+        "business_info": {
+            "email": "info@indapoint.com",
+            "name": "IndaPoint Technologies Private Limited",
+            "social_media": {
+                "linkedin": "indapoint",
+                "twitter": "@indapoint"
+            },
+            "type": "IT Consulting Company",
+            "website": "www.indapoint.com"
+        },
+        "business_info_email": "info@indapoint.com",
+        "business_info_name": "IndaPoint Technologies Private Limited",
+        "business_info_social_media_linkedin": "indapoint",
+        "business_info_social_media_twitter": "@indapoint",
+        "business_info_type": "IT Consulting Company",
+        "business_info_website": "www.indapoint.com",
+        "business_seo_keywords": "IT Consulting Company, IT Consulting Services, IT Consulting, IT Consulting Firm, IT Consulting Firm in India, IT Consulting Firm in Mumbai, IT Consulting Firm in Pune, IT Consulting Firm in Delhi, IT Consulting Firm in Gurgaon, IT Consulting Firm in Noida, IT Consulting Firm in Bangalore, IT Consulting Firm in Hyderabad, IT Consulting Firm in Chennai, IT Consulting Firm in Kolkata, IT Consulting Firm in Mumbai, IT Consulting Firm in Pune, IT Consulting Firm in Delhi, IT Consulting Firm in Gurgaon, IT Consulting Firm in Noida, IT Consulting Firm in Bangalore, IT Consulting Firm in Hyderabad, IT Consulting Firm in Chennai, IT Consulting Firm in Kolkata"
+    }
+    

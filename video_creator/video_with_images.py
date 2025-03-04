@@ -201,10 +201,10 @@ def apply_random_transition(clip, duration, direction=None, transition_type=None
 
         def make_frame(t):
             # Always zoom in from 1.5x to 1x
-            zoom_factor = 1.5 - 0.5 * t
+            zoom_factor = max(1.0, 1.5 - 0.5 * t)  # Ensure zoom factor never goes below 1.0
             frame = clip.get_frame(t)
-            zoomed_w = int(w * zoom_factor)
-            zoomed_h = int(h * zoom_factor)
+            zoomed_w = max(w, int(w * zoom_factor))  # Ensure width never goes below original
+            zoomed_h = max(h, int(h * zoom_factor))  # Ensure height never goes below original
             
             # Resize the frame
             resized = cv2.resize(frame, (zoomed_w, zoomed_h))
@@ -272,11 +272,11 @@ def create_video_with_images(audio_path, config, resolution, job_id, request_dic
     try:
         # Create temporary output file path
         # let us get the output path from the file writer
-        output_path = get_output_path(
-            job_id=job_id,
-            customer_id=request_dict['customer_id'],
+        output_path, output_dir = get_output_path(
+            filename=config.get('main_video_filename', 'video.mp4'),
             profile_name=request_dict['profile_name'],
-            file_name=config.get('main_video_filename')
+            customer_id=request_dict['customer_id'],
+            job_id=str(job_id)
         )
         image_clips = []
 

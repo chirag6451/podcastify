@@ -99,6 +99,9 @@ def create_thumbnails(
             temp_path = os.path.join(thumbnails_dir, f"temp_{output_filename}")
             thumbnail.save_frame(temp_path)
             
+            print("================================================")
+            print(f"output_path: {output_path}")
+            print("================================================")
             # Use PIL to load and save with quality
             with Image.open(temp_path) as img:
                 img.save(output_path, 'JPEG', quality=95)
@@ -130,6 +133,7 @@ def create_podcast_short_video(
     welcome_audio_path: str,
     config: dict,
     request_dict: dict,
+    thumbnail_dir:str
 ) -> Tuple[str, Optional[List[str]]]:
     """
     Creates a podcast intro video that displays:
@@ -511,7 +515,7 @@ def create_podcast_short_video(
         if config.get('create_thumbnails'):
             thumbnail_paths = create_thumbnails(
                 full_output_path,
-                thumbnails_dir=config['thumbnails_output_dir']
+                thumbnails_dir=thumbnail_dir
             )
         
         logger.info(f"Podcast short video saved to: {full_output_path}")

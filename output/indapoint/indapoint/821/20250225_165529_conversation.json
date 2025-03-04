@@ -1,0 +1,45 @@
+{
+  "topic": "The Power of AI in Recrutiment",
+  "intro": {
+    "text": "Welcome to IndaPoint Technologies Private Limited's podcast! Today, we delve into a fascinating subject at the crossroads of technology and human resources: the POWER of AI in recruitment. Have you ever wondered how AI could revolutionize the way companies hire talent? Or how this technology can streamline processes and perhaps even eliminate biases? Join us as we explore these burning questions, discussing the impact and potential challenges of AI in recruitment.",
+    "speaker": "Jessica"
+  },
+  "conversation": [
+    {
+      "order": 0,
+      "speaker": "Jessica",
+      "text": "Welcome to IndaPoint Technologies Private Limited's podcast! Today, we delve into a fascinating subject at the crossroads of technology and human resources: the POWER of AI in recruitment. Have you ever wondered how AI could revolutionize the way companies hire talent? Or how this technology can streamline processes and perhaps even eliminate biases? Join us as we explore these burning questions, discussing the impact and potential challenges of AI in recruitment.",
+      "overlap_with": {}
+    },
+    {
+      "order": 1,
+      "speaker": "Jessica",
+      "text": "Ken, isn't it mind-boggling how AI is transforming recruitment? I mean, the thought of algorithms matching candidates to jobs is almost futuristic! I just can't help but be amazed by its potential... What do you think?",
+      "overlap_with": {
+        "Ken": "Absolutely!"
+      }
+    },
+    {
+      "order": 2,
+      "speaker": "Ken",
+      "text": "Indeed, Jessica, the analytical capabilities of AI are quite groundbreaking! It can analyze resumes, predict a candidate's fit, and even remove 'biases' that we humans might unwittingly hold. However, I do worry about the 'human touch'... Do you think we might lose that personal connection?",
+      "overlap_with": {
+        "Jessica": "That's a concern!"
+      }
+    },
+    {
+      "order": 4,
+      "speaker": "Jessica",
+      "text": "Thank you for joining us! Today, we scratched the surface of AI's impact on recruitment, exploring both its enticing opportunities and possible pitfalls. Let's continue this conversation at IndaPoint Technologies Private Limited! Reach out to us via email at info@indapoint.com or follow us on social media: LinkedIn at indapoint and Twitter @indapoint. Until next time, keep innovating and remember... the future of recruitment is here!",
+      "overlap_with": {}
+    }
+  ],
+  "outro": {
+    "text": "Thank you for joining us! Today, we scratched the surface of AI's impact on recruitment, exploring both its enticing opportunities and possible pitfalls. Let's continue this conversation at IndaPoint Technologies Private Limited! Reach out to us via email at info@indapoint.com or follow us on social media: LinkedIn at indapoint and Twitter @indapoint. Until next time, keep innovating and remember... the future of recruitment is here!",
+    "speaker": "Jessica"
+  },
+  "speakers": [
+    "Jessica",
+    "Ken"
+  ]
+}

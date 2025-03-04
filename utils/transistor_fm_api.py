@@ -5,6 +5,11 @@ import json
 from typing import Optional, Dict, List
 from dotenv import load_dotenv
 from urllib.parse import urlencode
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load API key from .env file
 load_dotenv()
@@ -19,7 +24,6 @@ class TransistorFMClient:
             
         self.headers = {
             "x-api-key": API_KEY,
-            "Content-Type": "application/json",
             "Accept": "application/json"
         }
         
@@ -49,20 +53,19 @@ class TransistorFMClient:
             return result['data']
         return None
 
-    def get_shows(self, page: int = 1, per_page: int = 10) -> Optional[List[Dict]]:
-        """Get a list of shows"""
+    def get_shows(self, page: int = 1, per_page: int = 5) -> Optional[Dict]:
+        """Get list of shows"""
         params = {
             "pagination[page]": page,
-            "pagination[per]": per_page
+            "pagination[per]": per_page,
+            "fields[show][]": ["title", "description"]
         }
-        response = requests.get(f"{self.BASE_URL}/shows", headers=self.headers, params=params)
-        result = self._handle_response(response)
-        if result and 'data' in result:
-            print("\nShows:")
-            for show in result['data']:
-                print(f"- {show['attributes'].get('title')} (ID: {show['id']})")
-            return result['data']
-        return None
+        response = requests.get(
+            f"{self.BASE_URL}/shows",
+            headers=self.headers,
+            params=params
+        )
+        return self._handle_response(response)
 
     def get_show(self, show_id: str) -> Optional[Dict]:
         """Get details of a specific show"""
@@ -105,34 +108,48 @@ class TransistorFMClient:
             return result['data']
         return None
 
-    def create_episode(self, show_id: str, title: str, summary: str, season: Optional[int] = None, number: Optional[int] = None) -> Optional[Dict]:
-        """Create a new episode"""
-        # Prepare data in the same format as curl example
+    def create_episode(self, show_id: str, seo_title: str, seo_description: str, video_url: str = None, thumbnail_url_medium: str = None, season: Optional[int] = None, number: Optional[int] = None) -> Optional[Dict]:
+        """Create a new episode with metadata from youtube_meta_data table"""
+        # Prepare data for the API
         data = {
             "episode[show_id]": show_id,
-            "episode[title]": title,
-            "episode[summary]": summary
+            "episode[title]": seo_title,
+            "episode[summary]": seo_description[:500] if seo_description else "",  # Summary should be shorter
+            "episode[description]": seo_description,  # Full description can be longer
+            "episode[type]": "full",
+            "episode[email_notifications]": False  # Disable email notifications
         }
         
+        # Add optional fields if provided
+        if video_url:
+            data["episode[video_url]"] = video_url
+        if thumbnail_url_medium:
+            data["episode[image_url]"] = thumbnail_url_medium
         if season is not None:
             data["episode[season]"] = str(season)
         if number is not None:
             data["episode[number]"] = str(number)
             
-        # Convert data to URL-encoded string
-        data_str = urlencode(data)
-        
-        # Use the same headers as curl
+        # Log the request data for debugging
+        logger.info(f"Creating episode with data: {json.dumps(data, indent=2)}")
+            
+        # Set headers for form-encoded data
         headers = {
-            "x-api-key": API_KEY,
+            **self.headers,
             "Content-Type": "application/x-www-form-urlencoded"
         }
-        
+            
+        # Make the API request
         response = requests.post(
             f"{self.BASE_URL}/episodes",
             headers=headers,
-            data=data_str
+            data=data
         )
+        
+        # Log the response for debugging
+        if response.status_code not in [200, 201]:  # Both 200 and 201 are success codes
+            logger.error(f"Error creating episode. Status code: {response.status_code}")
+            logger.error(f"Response: {response.text}")
         
         result = self._handle_response(response)
         if result and 'data' in result:
@@ -212,8 +229,10 @@ if __name__ == "__main__":
     show_id = "61656"  # Your Test show ID
     episode = client.create_episode(
         show_id=show_id,
-        title="My First Test Episode",
-        summary="This is a test episode created via the API",
+        seo_title="My First Test Episode",
+        seo_description="This is a test episode created via the API",
+        video_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        thumbnail_url_medium="https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
         season=1,
         number=1
     )

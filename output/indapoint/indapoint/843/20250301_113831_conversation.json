@@ -1,0 +1,45 @@
+{
+  "topic": "AI-Powered Business: Hype vs. Reality\u2013 Discussing realistic expectations versus common misconceptions about AI in business",
+  "intro": {
+    "text": "Welcome to the IndaPoint Technologies podcast, where we dive into the intricate world of technology and its impact on businesses. Today, we're peeling back the layers of AI in business to separate the 'hype' from the 'reality.' Is AI truly a 'revolutionary tool' for businesses, or are we setting ourselves up for disappointment with inflated expectations? Join us as we explore the realistic expectations versus common misconceptions of AI in the business realm. Stay tuned, as this conversation will equip you with insights to navigate the world of AI with clarity and confidence.",
+    "speaker": "Eva Grace"
+  },
+  "conversation": [
+    {
+      "order": 0,
+      "speaker": "Eva Grace",
+      "text": "Welcome to the IndaPoint Technologies podcast, where we dive into the intricate world of technology and its impact on businesses. Today, we're peeling back the layers of AI in business to separate the 'hype' from the 'reality.' Is AI truly a 'revolutionary tool' for businesses, or are we setting ourselves up for disappointment with inflated expectations? Join us as we explore the realistic expectations versus common misconceptions of AI in the business realm. Stay tuned, as this conversation will equip you with insights to navigate the world of AI with clarity and confidence.",
+      "overlap_with": {}
+    },
+    {
+      "order": 1,
+      "speaker": "Eva Grace",
+      "text": "You know, Oscar, people are often swept away by the hype that AI will solve all business woes overnight. But reality isn\u2019t that straightforward, is it?",
+      "overlap_with": {
+        "Oscar Davis": "Exactly!"
+      }
+    },
+    {
+      "order": 2,
+      "speaker": "Oscar Davis",
+      "text": "Spot on, Eva! While AI can be transformative, it requires proper implementation and realistic expectations. Far too many businesses think it's a magic wand when, in fact, it's a 'tool' that needs strategic deployment. How do you feel about the common belief that AI can completely 'replace' human intuition?",
+      "overlap_with": {
+        "Eva Grace": "Oh, I see..."
+      }
+    },
+    {
+      "order": 4,
+      "speaker": "Eva Grace",
+      "text": "To sum it all up, AI's potential in business is immense, but it's crucial to match expectations with reality. For more insights and guidance, visit us at www.indapoint.com or connect with IndaPoint on LinkedIn and Twitter. Thank you for tuning in, and remember to approach AI with both 'optimism' and 'practicality.'",
+      "overlap_with": {}
+    }
+  ],
+  "outro": {
+    "text": "To sum it all up, AI's potential in business is immense, but it's crucial to match expectations with reality. For more insights and guidance, visit us at www.indapoint.com or connect with IndaPoint on LinkedIn and Twitter. Thank you for tuning in, and remember to approach AI with both 'optimism' and 'practicality.'",
+    "speaker": "Eva Grace"
+  },
+  "speakers": [
+    "Eva Grace",
+    "Oscar Davis"
+  ]
+}

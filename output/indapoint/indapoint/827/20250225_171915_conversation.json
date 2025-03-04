@@ -1,0 +1,45 @@
+{
+  "topic": "The Power of AI in Recrutiment",
+  "intro": {
+    "text": "Welcome to IndaPoint Technologies' new podcast, where we delve into the cutting edge of technology and its implications for businesses around the world. Today, we're tackling a big topic: 'The Power of AI in Recruitment'. How is artificial intelligence changing the landscape of hiring, and what does it mean for companies and candidates alike? Join us as we unravel these questions and explore how AI is reshaping recruitment practices.",
+    "speaker": "Eva Grace"
+  },
+  "conversation": [
+    {
+      "order": 0,
+      "speaker": "Eva Grace",
+      "text": "Welcome to IndaPoint Technologies' new podcast, where we delve into the cutting edge of technology and its implications for businesses around the world. Today, we're tackling a big topic: 'The Power of AI in Recruitment'. How is artificial intelligence changing the landscape of hiring, and what does it mean for companies and candidates alike? Join us as we unravel these questions and explore how AI is reshaping recruitment practices.",
+      "overlap_with": {}
+    },
+    {
+      "order": 1,
+      "speaker": "Eva Grace",
+      "text": "Oscar, AI in recruitment is more than just a technological advance... it's a revolution! I mean, think about it\u2014no more sifting through endless resumes!",
+      "overlap_with": {
+        "Oscar Davis": "Absolutely!"
+      }
+    },
+    {
+      "order": 2,
+      "speaker": "Oscar Davis",
+      "text": "Exactly, Eva! AI streamlines the whole process, making it faster and much more efficient. It's fascinating how algorithms can actually predict a candidate's fit. Would you believe it? We're heading towards a future where AI could even eliminate unconscious bias!",
+      "overlap_with": {
+        "Eva Grace": "Wow!"
+      }
+    },
+    {
+      "order": 4,
+      "speaker": "Eva Grace",
+      "text": "Today, we scratched the surface of AI's impact on recruitment. As businesses like IndaPoint Technologies continue to pioneer these innovations, we invite you to stay curious and engaged. Visit us at www.indapoint.com, follow us on LinkedIn or Twitter @indapoint, or drop us an email at info@indapoint.com for more insights. Thanks for tuning in\u2014let's embrace the future, together!",
+      "overlap_with": {}
+    }
+  ],
+  "outro": {
+    "text": "Today, we scratched the surface of AI's impact on recruitment. As businesses like IndaPoint Technologies continue to pioneer these innovations, we invite you to stay curious and engaged. Visit us at www.indapoint.com, follow us on LinkedIn or Twitter @indapoint, or drop us an email at info@indapoint.com for more insights. Thanks for tuning in\u2014let's embrace the future, together!",
+    "speaker": "Oscar Davis"
+  },
+  "speakers": [
+    "Eva Grace",
+    "Oscar Davis"
+  ]
+}

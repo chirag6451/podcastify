@@ -2,7 +2,7 @@
 import logging
 import os
 import sys
-from datetime import datetime
+from typing import List, Optional, Tuple
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -18,124 +18,141 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def process_pending_youtube_uploads():
+def process_pending_youtube_uploads() -> None:
     """Process all pending YouTube uploads that have been approved"""
     try:
-        logger.info("Starting to process pending YouTube uploads...")
+        logger.info("Starting YouTube upload process...")
         db = PodcastDB()
         with db.get_connection() as conn:
             with conn.cursor() as cur:
-                # Get all approved videos pending upload
+                # Get all users with Google credentials
                 cur.execute("""
-                    SELECT 
-                        m.id,
-                        m.customer_id,
-                        c.channel_id as youtube_channel_id,
-                        m.title,
-                        m.description,
-                        m.privacy_status,
-                        COALESCE(m.video_file_path, v.main_video_path) as video_path,
-                        m.playlist_id
-                    FROM youtube_video_metadata m
-                    LEFT JOIN video_paths v ON v.id = m.video_path_id
-                    JOIN customer_youtube_channels c ON c.id = m.channel_id
-                    WHERE m.approval_status = 'approved'
-                    AND m.publish_status IN ('draft', 'failed')
-                    LIMIT 10  -- Process in batches
+                    SELECT DISTINCT email 
+                    FROM google_auth 
+                    WHERE refresh_token IS NOT NULL
                 """)
-                pending_uploads = cur.fetchall()
-                logger.info(f"Found {len(pending_uploads)} pending uploads to process")
-                
-                for upload in pending_uploads:
+                users = cur.fetchall()
+                logger.info(f"Found {len(users)} users with Google credentials")
+
+                # Process each user's uploads
+                for user in users:
+                    user_email = user[0]
+                    logger.info(f"Processing videos for user: {user_email}")
+
                     try:
-                        logger.info(f"Processing upload ID {upload[0]} for customer {upload[1]}")
-                        # Initialize YouTube manager for this user
-                        youtube = YouTubeManager(upload[1])  # customer_id
-                        
-                        # Upload video
-                        result = youtube.upload_video(
-                            video_path=upload[6],  # video_path
-                            channel_id=upload[2],  # youtube_channel_id
-                            playlist_id=upload[7],  # playlist_id
-                            title=upload[3],  # title
-                            description=upload[4],  # description
-                            privacy_status=upload[5],  # privacy_status
-                            upload_id=upload[0]  # metadata id for updating status
-                        )
-                        # Update successful upload in database
-                        video_id = result.get('youtube_id')
-                        if not video_id:
-                            raise Exception("No video ID returned from YouTube")
-                            
-                        video_url = result.get('url')
-                        if not video_url:
-                            video_url = f"https://youtube.com/watch?v={video_id}"
-                        
-                        # Extract thumbnail URLs if available
-                        thumbnail_default = None
-                        thumbnail_medium = None
-                        thumbnail_high = None
-                        
-                        # Get video details from YouTube
-                        youtube_response = youtube.service.videos().list(
-                            part="snippet",
-                            id=video_id
-                        ).execute()
-                        
-                        if 'items' in youtube_response and youtube_response['items']:
-                            video_details = youtube_response['items'][0]
-                            if 'snippet' in video_details and 'thumbnails' in video_details['snippet']:
-                                thumbnails = video_details['snippet']['thumbnails']
-                                if 'default' in thumbnails:
-                                    thumbnail_default = thumbnails['default']['url']
-                                if 'medium' in thumbnails:
-                                    thumbnail_medium = thumbnails['medium']['url']
-                                if 'high' in thumbnails:
-                                    thumbnail_high = thumbnails['high']['url']
-                        
+                        # Get all approved videos for this user that haven't been uploaded
                         cur.execute("""
-                            UPDATE youtube_video_metadata
-                            SET youtube_video_id = %s,
-                                publish_status = 'published'::youtube_publish_status,
-                                published_at = CURRENT_TIMESTAMP,
-                                updated_at = CURRENT_TIMESTAMP,
-                                video_url = %s,
-                                thumbnail_url_default = %s,
-                                thumbnail_url_medium = %s,
-                                thumbnail_url_high = %s,
-                                error_message = NULL
-                            WHERE id = %s
-                        """, (
-                            video_id,
-                            video_url,
-                            thumbnail_default,
-                            thumbnail_medium,
-                            thumbnail_high,
-                            upload[0]
-                        ))
-                        conn.commit()
-                        logger.info(f"Successfully uploaded video ID {video_id} for customer {upload[1]}")
-                        logger.info(f"Video URL: {video_url}")
-                        if thumbnail_high:
-                            logger.info(f"Thumbnail URLs:")
-                            logger.info(f"  Default: {thumbnail_default}")
-                            logger.info(f"  Medium:  {thumbnail_medium}")
-                            logger.info(f"  High:    {thumbnail_high}")
+                            SELECT 
+                                m.id,
+                                m.customer_id,
+                                CASE 
+                                    WHEN j.youtube_channel_id IS NOT NULL AND j.youtube_channel_id != '' THEN j.youtube_channel_id
+                                    ELSE (SELECT channel_id FROM customer_youtube_channels WHERE id = m.channel_id)
+                                END as channel_id,
+                                COALESCE(m.seo_title, m.title) as title,
+                                COALESCE(m.seo_description, m.description) as description,
+                                m.privacy_status,
+                                m.video_file_path,
+                                m.selected_thumbnail_path,
+                                j.youtube_playlist_id,
+                                j.id as job_id
+                            FROM youtube_video_metadata m
+                            LEFT JOIN podcast_jobs j ON m.job_id = j.id
+                            LEFT JOIN customer_youtube_channels c ON m.channel_id = c.id
+                            WHERE m.publish_status = 'approved'
+                            AND m.youtube_video_id IS NULL
+                            AND m.customer_id = %s
+                        """, (user_email,))
+                        uploads = cur.fetchall()
+                        logger.info(f"Found {len(uploads)} pending uploads for user {user_email}")
+
+                        # Process each video for this user
+                        youtube = YouTubeManager(user_email)  # Create YouTubeManager once per user
+                        for upload in uploads:
+                            try:
+                                logger.info(f"Processing upload with ID {upload[0]}")
+                                logger.info(f"Title: '{upload[3]}'")  # Log the title
+                                logger.info(f"Description length: {len(upload[4]) if upload[4] else 0}")
+                                logger.info(f"Using channel ID: {upload[2]}")  # Log channel ID
+                                
+                                # Clean and validate title
+                                title = upload[3].strip() if upload[3] else ""
+                                if not title:
+                                    # If title is empty, try to get it from database
+                                    db = PodcastDB()
+                                    with db.get_connection() as conn:
+                                        with conn.cursor() as cur:
+                                            cur.execute("""
+                                                SELECT title 
+                                                FROM youtube_video_metadata 
+                                                WHERE id = %s
+                                            """, (upload[0],))
+                                            result = cur.fetchone()
+                                            if result and result[0]:
+                                                title = result[0].strip()
+                                
+                                if not title:
+                                    raise ValueError(f"No valid title found for video {upload[0]}")
+                                
+                                logger.info(f"Using title: '{title}'")
+                                
+                                # Ensure playlist_id is None if empty or whitespace
+                                playlist_id = upload[8] if upload[8] and upload[8].strip() else None
+                                if playlist_id:
+                                    logger.info(f"Will add to playlist: {playlist_id}")
+                                else:
+                                    logger.info("No playlist specified, skipping playlist addition")
+                                
+                                result = youtube.upload_video(
+                                    video_path=upload[6],  # video_file_path
+                                    channel_id=str(upload[2]),  # channel_id from podcast_jobs or metadata
+                                    playlist_id=playlist_id,  # playlist_id from podcast_jobs
+                                    title=title,  # cleaned title
+                                    description=upload[4],  # description from metadata
+                                    privacy_status='public',  # Set to public by default
+                                    upload_id=upload[0]  # metadata id
+                                )
+                                if isinstance(result, dict):
+                                    logger.info(f"Successfully uploaded video {upload[0]} to YouTube with ID {result.get('youtube_id')}")
+                                    logger.info(f"Video {upload[0]} details:")
+                                    logger.info(f"  YouTube ID: {result.get('youtube_id')}")
+                                    logger.info(f"  URL: {result.get('url')}")
+                                    
+                                    # Update database with thumbnail URLs
+                                    video_info = youtube.service.videos().list(
+                                        part="snippet",
+                                        id=result.get('youtube_id')
+                                    ).execute()
+                                    
+                                    if video_info.get('items'):
+                                        thumbnails = video_info['items'][0]['snippet'].get('thumbnails', {})
+                                        cur.execute("""
+                                            UPDATE youtube_video_metadata
+                                            SET thumbnail_url_default = %s,
+                                                thumbnail_url_medium = %s,
+                                                thumbnail_url_high = %s
+                                            WHERE id = %s
+                                        """, (
+                                            thumbnails.get('default', {}).get('url'),
+                                            thumbnails.get('medium', {}).get('url'),
+                                            thumbnails.get('high', {}).get('url'),
+                                            upload[0]
+                                        ))
+                                        conn.commit()
+                                        logger.info(f"  Thumbnails:")
+                                        logger.info(f"    Default: {thumbnails.get('default', {}).get('url')}")
+                                        logger.info(f"    Medium: {thumbnails.get('medium', {}).get('url')}")
+                                        logger.info(f"    High: {thumbnails.get('high', {}).get('url')}")
+                                        logger.info(f"Updated metadata for video {upload[0]} with URLs and thumbnails")
+
+                            except Exception as e:
+                                logger.error(f"Error uploading video {upload[0]}: {e}")
+
                     except Exception as e:
-                        logger.error(f"Error uploading video {upload[0]}: {str(e)}")
-                        # Update error status in database
-                        cur.execute("""
-                            UPDATE youtube_video_metadata
-                            SET publish_status = 'failed'::youtube_publish_status,
-                                error_message = %s,
-                                updated_at = CURRENT_TIMESTAMP
-                            WHERE id = %s
-                        """, (str(e), upload[0]))
-                        conn.commit()
-                        
+                        logger.error(f"Error processing videos for user {user_email}: {e}")
+
     except Exception as e:
-        logger.error(f"Error processing YouTube uploads: {e}")
-        raise
+        logger.error(f"Error in process_pending_youtube_uploads: {e}")
 
 if __name__ == "__main__":
     process_pending_youtube_uploads()

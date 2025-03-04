@@ -1,0 +1,45 @@
+{
+  "topic": "AI-Powered Business: Hype vs. Reality\u2013 Discussing realistic expectations versus common misconceptions about AI in business",
+  "intro": {
+    "text": "Welcome to IndaPoint's Podcast, where we delve into the dynamic world of technology and business innovation! I'm Oscar Davis, and today we have a thought-provoking topic on our hands: AI-Powered Business: HYPE vs. REALITY. Is AI really the miracle solution it's often hyped up to be, or are we letting our expectations soar too high? Joined by Eva Grace, we'll be sorting through the noise, setting realistic expectations, and debunking some common misconceptions about AI in business. By the end of this conversation, you'll have a clearer picture of the trajectory AI is paving for businesses worldwide!",
+    "speaker": "Oscar Davis"
+  },
+  "conversation": [
+    {
+      "order": 0,
+      "speaker": "Eva Grace",
+      "text": "Welcome to IndaPoint's Podcast, where we delve into the dynamic world of technology and business innovation! I'm Oscar Davis, and today we have a thought-provoking topic on our hands: AI-Powered Business: HYPE vs. REALITY. Is AI really the miracle solution it's often hyped up to be, or are we letting our expectations soar too high? Joined by Eva Grace, we'll be sorting through the noise, setting realistic expectations, and debunking some common misconceptions about AI in business. By the end of this conversation, you'll have a clearer picture of the trajectory AI is paving for businesses worldwide!",
+      "overlap_with": {}
+    },
+    {
+      "order": 1,
+      "speaker": "Eva Grace",
+      "text": "Oscar, the buzz around AI is just enormous these days! Companies are either adopting AI with the hopes of revolutionizing their operations... or they're holding back because of the overwhelming uncertainty that comes with it.",
+      "overlap_with": {
+        "Oscar Davis": "Absolutely!"
+      }
+    },
+    {
+      "order": 2,
+      "speaker": "Oscar Davis",
+      "text": "Exactly, Eva. But here's where it gets interesting\u2014while AI has some truly amazing capabilities, it's not a magic wand. Businesses need to be strategic in its implementation, understanding that it\u2019s more of an 'evolution' rather than an overnight transformation. Would you say that's where many get it wrong?",
+      "overlap_with": {
+        "Eva Grace": "Right, they do!"
+      }
+    },
+    {
+      "order": 4,
+      "speaker": "Eva Grace",
+      "text": "Thank you all for tuning in! We've uncovered that with AI, a balanced approach is key. Dive deeper into our insights and strategies by visiting indapoint.com, and stay connected with us on LinkedIn and Twitter @indapoint. If you have any thoughts or questions, drop us an email at info@indapoint.com. Until next time, keep innovating!",
+      "overlap_with": {}
+    }
+  ],
+  "outro": {
+    "text": "Thank you all for tuning in! We've uncovered that with AI, a balanced approach is key. Dive deeper into our insights and strategies by visiting indapoint.com, and stay connected with us on LinkedIn and Twitter @indapoint. If you have any thoughts or questions, drop us an email at info@indapoint.com. Until next time, keep innovating!",
+    "speaker": "Oscar Davis"
+  },
+  "speakers": [
+    "Eva Grace",
+    "Oscar Davis"
+  ]
+}

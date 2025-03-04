@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from openai import OpenAI
 
-from create_audio.audio_utils import generate_audio_files, mix_conversation, CreateWelcomeAudio
+from create_audio.audio_utils import CreatePodcastIntroAudio, generate_audio_files, mix_conversation, CreateWelcomeAudio
 from create_audio.conversation import Conversation, ConversationTurn, ensure_directory
 from create_audio.conversation_prompts import get_conversation_prompts
 from create_audio.db_utils import PodcastDB
@@ -15,6 +15,7 @@ import config as config_settings
 import random
 from utils.file_writer import get_output_path
 from utils.open_ai_utils import get_podcast_intro
+from create_audio.audio_db_utils import AudioDBManger
 # Initialize logger
 logger = PodcastLogger("ConversationGenerator", "conversation.log")
 
@@ -80,13 +81,7 @@ def generate_conversation(
         Tuple of (audio_path, schema_path)
     """
     
-    #IF WE HAVE SET STATIC_AUDIO IN .ENV we just return the static audio files 
-    if os.getenv('STATIC_AUDIO') == 'true':
-        audio_path=config_settings.STATIC_AUDIO_PATH
-        schema_path = config_settings.STATIC_SCHEMA_PATH
-        welcome_audio_path = config_settings.STATIC_WELCOME_PATH
-        return audio_path, schema_path, welcome_audio_path
-    
+   
     client = OpenAI()
     
    
@@ -97,6 +92,7 @@ def generate_conversation(
     
     try:
         # Use provided voice IDs or select speakers from database
+  
         if config.get("voice_settings_voice_id1") and config.get("voice_settings_voice_id2"):
             logger.info("Using provided voice IDs...")
             speakers = [
@@ -117,12 +113,13 @@ def generate_conversation(
                     "speaking_style": config.get("voice_settings_conversation_mood")
                 }
             ]
+                    
         else:
             # Select speakers from database
             logger.section(f"Generating {config.get('voice_settings_language')} conversation about {request_dict.get('topic')}")
             db = PodcastDB()
             speakers = db.select_speakers_from_db(request_dict.get("topic"), config.get("voice_settings_conversation_mood"), config.get("voice_settings_language"), config.get("voice_settings_voice_accent"))
-  
+         
     
     #let us create a dict of business_info json from the config
         business_info = {
@@ -135,7 +132,7 @@ def generate_conversation(
                 "twitter": config.get("business_info_social_media_twitter", "")
             }
         }
-    
+        
         system_prompt, user_prompt = get_conversation_prompts(
             topic=request_dict.get("topic"),
             num_turns=config.get("voice_settings_num_turns"),
@@ -236,9 +233,14 @@ def generate_conversation(
         
         #let us generate podcast intro
         logger.info("Generating podcast intro...")
-        podcast_intro = get_podcast_intro(request_dict.get("topic"), conversation, "Chirag Kansara")
-        print(json.dumps(podcast_intro, indent=4))
-        exit()
+        podcast_expert_name = (business_info.get("representative_name") or "Eva Grace")
+    
+
+        podcast_intro = get_podcast_intro(request_dict.get("topic"), conversation, podcast_expert_name)
+    
+        podcast_intro_json = json.loads(podcast_intro)
+        podcast_intro_voiceover = podcast_intro_json['podcast_intro']
+        
         
         
         # Generate audio files
@@ -258,16 +260,54 @@ def generate_conversation(
         audio_files = generate_audio_files(conversation, output_dir, speakers)
         
         #let us generate welcome voiceover
-        logger.info("Generating welcome voiceover...")
-        welcome_audio_path = os.path.join(output_dir, "welcome.mp3")
-        welcome_audio = CreateWelcomeAudio(welcome_voiceover, welcome_audio_path, speakers[0]["voice_id"])
+        # logger.info("Generating welcome voiceover...")
+        # welcome_audio_path = os.path.join(output_dir, "welcome.mp3")
+        # welcome_audio = CreateWelcomeAudio(welcome_voiceover, welcome_audio_path, speakers[0]["voice_id"])
         # Mix the conversation
         logger.info("Mixing conversation...")
         output_path = mix_conversation(conversation, audio_files)
         
         logger.success(f"Generated conversation at {output_path}")
+
+        #create audio for podcast intro 
+        logger.info("Generating podcast intro voiceover...")
+        podcast_intro_filename = "podcast_intro.mp3"  # Always use mp3 extension for audio files
+        podcast_intro_path_tuple = get_output_path(
+            filename=podcast_intro_filename,
+            profile_name=request_dict.get("profile_name"),
+            customer_id=request_dict.get("customer_id"),
+            job_id=job_id,
+            theme=request_dict.get("theme", "default"),
+            timestamp_format="%Y%m%d_%H%M%S",
+            create_dir=True
+        )
+        # Get just the file path from the tuple
+        welcome_audio_path = podcast_intro_path_tuple[0]
        
-        return output_path, schema_path, welcome_audio,welcome_voiceover
+        welcome_audio_path = CreatePodcastIntroAudio(podcast_intro_voiceover, welcome_audio_path, speakers[0]["voice_id"])
+        logger.info(f"Podcast intro audio generated on path: {welcome_audio_path}")
+       #let us save all voideovver text and audio path to the database using AudioDBManger 
+        audio_db = AudioDBManger()
+        audio_db.create_audio_record(
+            job_id=job_id, 
+            customer_id=request_dict.get("customer_id"), welcome_voiceover_text=welcome_voiceover, 
+            conversation_data=conversation_data, 
+            intro_voiceover_text=podcast_intro_voiceover, 
+            podcast_intro_voiceover=podcast_intro_voiceover, 
+            default_podcast_intro_text=podcast_intro_voiceover, 
+            voice_settings=config.get("voice_settings"), 
+            request_data=request_dict,
+            welcome_audio_path=welcome_audio_path,
+            conversation_audio_path=audio_files,
+            intro_audio_path=welcome_audio_path,
+            default_podcast_intro_audio_path=welcome_audio_path,
+            final_mix_path=output_path,
+            schema_path=schema_path 
+            )
+
+        logger.success("Audio files generated and saved")
+     
+        return output_path, schema_path, welcome_audio_path,welcome_voiceover
     
     except Exception as e:
         logger.error(f"Error generating conversation: {str(e)}")
