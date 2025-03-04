@@ -1,0 +1,30 @@
+# Environment Configuration Example
+# Replace these values with your actual API keys and credentials
+
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-4-turbo-preview
+
+# Debug Settings
+DEBUG_MODE=true 
+STATIC_AUDIO=false
+CELERY_PROCESS=true
+
+# Database Configuration
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_DB=podcraftai
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+
+# Third-party API Keys
+ELEVANLAB_API_KEY=your_elevanlab_api_key
+ELEVANLAB_MODEL_ID=eleven_flash_v2_5
+
+# Streamlit Authentication
+GETIMAGE_API_KEY=your_getimage_api_key
+HEYGEN_API_KEY=your_heygen_api_key
+
+# Additional API Keys
+ARTITIFY_API_KEY=your_artitify_api_key
+TRANSISTOR_FM_API_KEY=your_transistor_fm_api_key

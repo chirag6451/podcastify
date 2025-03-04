@@ -4,6 +4,7 @@
 !.env.example
 .windsurfrules
 .windsurfrules.*
+!.windsurfrules.example
 
 # Python
 __pycache__/
