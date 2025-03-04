@@ -49,7 +49,7 @@ conversation.log
 *.db
 dump.rdb
 
-# Media files
+# Media files - except profiles
 media/
 uploads/
 defaults/videos/
@@ -58,14 +58,11 @@ defaults/bgimages/
 defaults/bgmusic/
 defaults/images/
 defaults/speakers/
-*.mp3
-*.mp4
-*.wav
-*.webp
-*.jpg
-*.jpeg
-*.png
 videos/
+
+# Allow profiles directory
+!profiles/
+!profiles/**/*
 
 # Backup files
 *.bak
