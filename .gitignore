@@ -48,6 +48,9 @@ conversation.log
 *.sqlite3
 *.db
 dump.rdb
+*_backup_*.sql
+sql/
+backups/
 
 # Media files - except profiles
 media/
@@ -81,6 +84,13 @@ node_modules/.cache/
 # Allow profiles directory
 !profiles/
 !profiles/**/*
+
+# AuthSignup exceptions
+!AuthSignup/
+!AuthSignup/**/*
+!AuthSignup/client/src/lib/
+!AuthSignup/client/src/lib/**/*
+!AuthSignup/.env
 
 # Backup files
 *.bak
