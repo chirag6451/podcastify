@@ -1,0 +1,99 @@
+Website Layout & Design Guide (Updated)
+1. Website Structure
+🔹 Home Page
+✅ Hero Section
+
+Tagline: "Effortless AI-Powered Podcasts – Create, Customize & Publish on Autopilot!"
+Subtext: "Generate professional podcasts & YouTube videos in any language. Let AI do the work for you!"
+CTA: “Get Started for Free” + Play a short AI-generated podcast sample
+✅ Showcase Section (Featured Podcasts & Videos)
+
+Podcast Playlist – Embeddable audio player showcasing AI-generated podcasts
+YouTube Video Grid – Auto-generated YouTube videos created by the platform
+Call-to-action: "See what AI can create for you!"
+✅ How It Works Section (With Animation / Infographic)
+
+Choose a Topic or Let AI Decide
+Pick a Voice & Personality
+AI Generates Podcast & Video
+Autopilot or Copilot Mode
+Automatic Publishing to YouTube & Podcast Platforms
+✅ Autopilot vs. Copilot Section
+📌 Autopilot Mode (Fully Automated)
+
+AI chooses trending topics and generates entire podcasts & videos
+Auto-publishes to YouTube, Spotify, Apple Podcasts, and more
+Best for hands-free, automated podcasting
+📌 Copilot Mode (Semi-Automated)
+
+AI generates content, but you review scripts, voiceovers, and videos before publishing
+Allows manual edits for fine-tuning
+Best for creators who want more control
+✅ Integration & Publishing Platforms
+
+Icons of YouTube, Spotify, Apple Podcasts, Google Podcasts, Amazon Music
+API integrations for easy connection
+✅ Call-to-Action (CTA)
+
+"Start Your First AI Podcast Now – No Skills Needed!"
+“Try Free” or “See Demo” buttons
+🔹 Features Page
+Detailed breakdown of:
+
+🎙️ AI-Powered Voice Customization
+🌎 Multi-Language Support
+🎬 AI-Generated YouTube Videos
+🎧 Automatic Publishing to Major Platforms
+🤖 Autopilot vs. Copilot Modes
+📊 Analytics & Growth Insights
+🔹 Showcase Page (Generated Content)
+✅ Featured AI Podcasts (With Embedded Audio Players)
+
+Sections for different podcast topics (Tech, Business, Entertainment, etc.)
+Users can listen and explore
+✅ Featured AI-Generated YouTube Videos (With Thumbnails & Play Buttons)
+
+AI-created videos displayed in a grid format
+Click to view on YouTube
+✅ Success Stories & Testimonials
+
+Real users sharing experiences with the platform
+🔹 Pricing Page
+Free, Pro, and Enterprise pricing tiers
+Comparison table of features
+Call-to-action: “Start Free – Upgrade Anytime”
+🔹 About Page
+The vision behind AI-powered podcasting
+Team & mission
+🔹 Blog / Resources Page
+Podcasting Tips
+AI Trends & Industry News
+🔹 Contact Page
+Support Form & FAQs
+Live Chat Option
+2. Design Guide
+🎨 Color Palette
+
+Primary: Electric Blue (#0984E3) or Deep Purple (#6C5CE7)
+Secondary: Gradient Orange (#E17055) or Neon Green (#00B894)
+Dark Mode & Light Mode Support
+🔤 Typography
+
+Headings: Poppins / Montserrat (Bold, Clean)
+Body Text: Lato / Inter (Modern, Easy-to-Read)
+CTA & Highlights: Roboto Medium
+🖌️ UI Elements
+
+Rounded buttons & gradient backgrounds
+AI-generated podcast cards with play buttons & waveform animations
+Hover effects on YouTube video thumbnails
+🎥 Animations
+
+Subtle scrolling animations
+Voice waveform effects on audio players
+Floating icons for AI automation
+3. User Experience (UX) Priorities
+✅ Instant AI Demo on Homepage – Users should hear a sample podcast immediately
+✅ Easy Sign-Up with No Credit Card Required
+✅ Podcast & Video Previews Before Publishing (For Copilot Mode)
+✅ Mobile-Optimized UI – Works seamlessly across devices
