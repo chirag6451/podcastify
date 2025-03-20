@@ -59,6 +59,24 @@ defaults/bgmusic/
 defaults/images/
 defaults/speakers/
 videos/
+*.mp3
+*.mp4
+*.jpg
+*.jpeg
+*.png
+*.webp
+
+# Output directories
+output/
+outputs/
+thumbnails/
+create_audio/
+
+# Node.js
+node_modules/
+node_modules/.cache/
+*.pack
+*.pack.old
 
 # Allow profiles directory
 !profiles/
