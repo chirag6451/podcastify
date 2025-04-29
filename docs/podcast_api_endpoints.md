@@ -547,6 +547,80 @@ curl -X GET "http://0.0.0.0:8011/api/podcasts/episodes?podcast_id=1" \
   -H "Authorization: Bearer <token>"
 ```
 
+### Get Latest Episodes
+
+**Endpoint:** `GET /podcasts/episodes/latest`
+
+**Query Parameters:**
+- `limit` (optional): Maximum number of episodes to return (default: 10, max: 50)
+
+**Response Schema:**
+```json
+[
+  {
+    "id": 1,
+    "podcast_id": 1,
+    "title": "Episode 1: Innovation in the Digital Age",
+    "description": "Discussing the latest innovations in digital technology",
+    "keywords": ["digital", "innovation", "technology"],
+    "language": "en",
+    "duration": null,
+    "status": "published",
+    "publish_date": "2025-04-24T12:00:00Z",
+    "cover_image": null,
+    "video_style_id": 1,
+    "conversation_style_id": 1,
+    "speaker1_id": 1,
+    "speaker2_id": 2,
+    "created_at": "2025-04-24T12:00:00Z",
+    "updated_at": "2025-04-24T12:30:00Z"
+  }
+]
+```
+
+**Example:**
+```bash
+curl -X GET "http://0.0.0.0:8011/api/podcasts/episodes/latest?limit=5" \
+  -H "Authorization: Bearer <token>"
+```
+
+### Get Scheduled Episodes
+
+**Endpoint:** `GET /podcasts/episodes/scheduled`
+
+**Query Parameters:**
+- `days_ahead` (optional): Number of days ahead to look for scheduled episodes (default: 30, max: 365)
+
+**Response Schema:**
+```json
+[
+  {
+    "id": 2,
+    "podcast_id": 1,
+    "title": "Episode 2: Future Trends",
+    "description": "Exploring upcoming trends in technology",
+    "keywords": ["trends", "future", "technology"],
+    "language": "en",
+    "duration": null,
+    "status": "scheduled",
+    "publish_date": "2025-05-01T12:00:00Z",
+    "cover_image": null,
+    "video_style_id": 1,
+    "conversation_style_id": 1,
+    "speaker1_id": 1,
+    "speaker2_id": 2,
+    "created_at": "2025-04-24T12:00:00Z",
+    "updated_at": "2025-04-24T12:30:00Z"
+  }
+]
+```
+
+**Example:**
+```bash
+curl -X GET "http://0.0.0.0:8011/api/podcasts/episodes/scheduled?days_ahead=30" \
+  -H "Authorization: Bearer <token>"
+```
+
 ### Update Episode
 
 **Endpoint:** `PUT /podcasts/episodes/{episode_id}`
@@ -599,6 +673,129 @@ curl -X PUT "http://0.0.0.0:8011/api/podcasts/episodes/1" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token>" \
   -d '{"podcast_id": 1, "title": "Updated Episode 1: Innovation in the Digital Age", "description": "Updated discussion on digital innovations", "status": "published"}'
+```
+
+### Update Episode Status
+
+**Endpoint:** `PATCH /podcasts/episodes/{episode_id}/status`
+
+**Path Parameters:**
+- `episode_id`: ID of the episode to update
+
+**Request Schema:**
+```json
+{
+  "status": "published"
+}
+```
+
+**Response Schema:**
+```json
+{
+  "id": 1,
+  "podcast_id": 1,
+  "title": "Episode 1: Innovation in the Digital Age",
+  "description": "Discussing the latest innovations in digital technology",
+  "keywords": ["digital", "innovation", "technology"],
+  "language": "en",
+  "duration": null,
+  "status": "published",
+  "publish_date": "2025-04-24T12:30:00Z",
+  "cover_image": null,
+  "video_style_id": 1,
+  "conversation_style_id": 1,
+  "speaker1_id": 1,
+  "speaker2_id": 2,
+  "created_at": "2025-04-24T12:00:00Z",
+  "updated_at": "2025-04-24T12:30:00Z"
+}
+```
+
+**Example:**
+```bash
+curl -X PATCH "http://0.0.0.0:8011/api/podcasts/episodes/1/status" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{"status": "published"}'
+```
+
+### Publish Episode Immediately
+
+**Endpoint:** `POST /podcasts/episodes/{episode_id}/publish`
+
+**Path Parameters:**
+- `episode_id`: ID of the episode to publish
+
+**Response Schema:**
+```json
+{
+  "id": 1,
+  "podcast_id": 1,
+  "title": "Episode 1: Innovation in the Digital Age",
+  "description": "Discussing the latest innovations in digital technology",
+  "keywords": ["digital", "innovation", "technology"],
+  "language": "en",
+  "duration": null,
+  "status": "published",
+  "publish_date": "2025-04-24T12:30:00Z",
+  "cover_image": null,
+  "video_style_id": 1,
+  "conversation_style_id": 1,
+  "speaker1_id": 1,
+  "speaker2_id": 2,
+  "created_at": "2025-04-24T12:00:00Z",
+  "updated_at": "2025-04-24T12:30:00Z"
+}
+```
+
+**Example:**
+```bash
+curl -X POST "http://0.0.0.0:8011/api/podcasts/episodes/1/publish" \
+  -H "Authorization: Bearer <token>"
+```
+
+### Schedule Episode for Future Publishing
+
+**Endpoint:** `POST /podcasts/episodes/{episode_id}/schedule`
+
+**Path Parameters:**
+- `episode_id`: ID of the episode to schedule
+
+**Request Schema:**
+```json
+{
+  "publish_date": "2025-05-01T12:00:00Z"
+}
+```
+
+**Response Schema:**
+```json
+{
+  "id": 1,
+  "podcast_id": 1,
+  "title": "Episode 1: Innovation in the Digital Age",
+  "description": "Discussing the latest innovations in digital technology",
+  "keywords": ["digital", "innovation", "technology"],
+  "language": "en",
+  "duration": null,
+  "status": "scheduled",
+  "publish_date": "2025-05-01T12:00:00Z",
+  "cover_image": null,
+  "video_style_id": 1,
+  "conversation_style_id": 1,
+  "speaker1_id": 1,
+  "speaker2_id": 2,
+  "created_at": "2025-04-24T12:00:00Z",
+  "updated_at": "2025-04-24T12:30:00Z"
+}
+```
+
+**Example:**
+```bash
+curl -X POST "http://0.0.0.0:8011/api/podcasts/episodes/1/schedule" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{"publish_date": "2025-05-01T12:00:00Z"}'
 ```
 
 ### Delete Episode

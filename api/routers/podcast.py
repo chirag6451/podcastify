@@ -4,7 +4,7 @@ This module defines FastAPI router for podcast-related endpoints including
 podcast management, episode management, and podcast group organization.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Path
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Path, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from ..db import get_db
@@ -18,7 +18,7 @@ from ..schemas.podcast import (
     PlatformConfigCreate, PlatformConfigResponse
 )
 from sqlalchemy.exc import SQLAlchemyError
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Create router
 router = APIRouter()
@@ -547,6 +547,255 @@ async def delete_episode(
         db.delete(episode)
         db.commit()
         return None
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error: {str(e)}"
+        )
+
+# Additional Episode Endpoints
+
+@router.patch("/episodes/{episode_id}/status", response_model=EpisodeResponse)
+async def update_episode_status(
+    episode_id: int = Path(..., gt=0),
+    status_data: dict = Body(..., example={"status": "published"}),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Update just the status of an episode.
+    
+    Args:
+        episode_id: Episode ID
+        status_data: Status data with 'status' field
+        db: Database session
+        current_user: Authenticated user
+        
+    Returns:
+        Updated episode
+    """
+    if "status" not in status_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Status field is required"
+        )
+        
+    # Validate status value
+    valid_statuses = ["draft", "published", "scheduled"]
+    if status_data["status"] not in valid_statuses:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Status must be one of: {', '.join(valid_statuses)}"
+        )
+    
+    # Join with podcast to check user ownership
+    episode = db.query(Episode).join(Podcast).filter(
+        Episode.id == episode_id,
+        Podcast.user_id == current_user.id
+    ).first()
+    
+    if not episode:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Episode not found"
+        )
+    
+    try:
+        episode.status = status_data["status"]
+        
+        # If status is published, set publish_date to now if not already set
+        if status_data["status"] == "published" and not episode.publish_date:
+            episode.publish_date = datetime.now()
+        
+        # If status is draft, clear publish_date
+        if status_data["status"] == "draft":
+            episode.publish_date = None
+            
+        episode.updated_at = datetime.now()
+        db.commit()
+        db.refresh(episode)
+        return episode
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error: {str(e)}"
+        )
+
+@router.get("/episodes/latest", response_model=List[EpisodeResponse])
+async def get_latest_episodes(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    limit: int = Query(10, ge=1, le=50)
+):
+    """
+    Get the latest episodes across all podcasts.
+    
+    Args:
+        db: Database session
+        current_user: Authenticated user
+        limit: Maximum number of episodes to return
+        
+    Returns:
+        List of latest episodes
+    """
+    # Get published episodes from user's podcasts, ordered by publish date
+    latest_episodes = db.query(Episode).join(Podcast).filter(
+        Podcast.user_id == current_user.id,
+        Episode.status == "published",
+        Episode.publish_date.isnot(None)
+    ).order_by(Episode.publish_date.desc()).limit(limit).all()
+    
+    return latest_episodes
+
+@router.get("/episodes/scheduled", response_model=List[EpisodeResponse])
+async def get_scheduled_episodes(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    days_ahead: int = Query(30, ge=1, le=365)
+):
+    """
+    Get all scheduled episodes for the next X days.
+    
+    Args:
+        db: Database session
+        current_user: Authenticated user
+        days_ahead: Number of days ahead to look for scheduled episodes
+        
+    Returns:
+        List of scheduled episodes
+    """
+    # Calculate date range
+    now = datetime.now()
+    end_date = now + timedelta(days=days_ahead)
+    
+    # Get scheduled episodes from user's podcasts
+    scheduled_episodes = db.query(Episode).join(Podcast).filter(
+        Podcast.user_id == current_user.id,
+        Episode.status == "scheduled",
+        Episode.publish_date.isnot(None),
+        Episode.publish_date > now,
+        Episode.publish_date <= end_date
+    ).order_by(Episode.publish_date.asc()).all()
+    
+    return scheduled_episodes
+
+@router.post("/episodes/{episode_id}/publish", response_model=EpisodeResponse)
+async def publish_episode(
+    episode_id: int = Path(..., gt=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Publish an episode immediately.
+    
+    Args:
+        episode_id: Episode ID
+        db: Database session
+        current_user: Authenticated user
+        
+    Returns:
+        Published episode
+    """
+    # Join with podcast to check user ownership
+    episode = db.query(Episode).join(Podcast).filter(
+        Episode.id == episode_id,
+        Podcast.user_id == current_user.id
+    ).first()
+    
+    if not episode:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Episode not found"
+        )
+    
+    if episode.status == "published":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Episode is already published"
+        )
+    
+    try:
+        episode.status = "published"
+        episode.publish_date = datetime.now()
+        episode.updated_at = datetime.now()
+        db.commit()
+        db.refresh(episode)
+        return episode
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error: {str(e)}"
+        )
+
+@router.post("/episodes/{episode_id}/schedule", response_model=EpisodeResponse)
+async def schedule_episode(
+    episode_id: int = Path(..., gt=0),
+    schedule_data: dict = Body(..., example={"publish_date": "2025-05-01T12:00:00Z"}),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Schedule an episode for future publishing.
+    
+    Args:
+        episode_id: Episode ID
+        schedule_data: Schedule data with 'publish_date' field
+        db: Database session
+        current_user: Authenticated user
+        
+    Returns:
+        Scheduled episode
+    """
+    if "publish_date" not in schedule_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="publish_date field is required"
+        )
+    
+    try:
+        # Parse the publish date
+        publish_date = datetime.fromisoformat(schedule_data["publish_date"].replace('Z', '+00:00'))
+        
+        # Ensure publish date is in the future
+        if publish_date <= datetime.now():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Publish date must be in the future"
+            )
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid date format. Use ISO format (e.g., 2025-05-01T12:00:00Z)"
+        )
+    
+    # Join with podcast to check user ownership
+    episode = db.query(Episode).join(Podcast).filter(
+        Episode.id == episode_id,
+        Podcast.user_id == current_user.id
+    ).first()
+    
+    if not episode:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Episode not found"
+        )
+    
+    if episode.status == "published":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot schedule an already published episode"
+        )
+    
+    try:
+        episode.status = "scheduled"
+        episode.publish_date = publish_date
+        episode.updated_at = datetime.now()
+        db.commit()
+        db.refresh(episode)
+        return episode
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(

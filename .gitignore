@@ -96,7 +96,7 @@ node_modules/.cache/
 *.bak
 *BK.*
 *BK/
-test_*
+
 
 # System Files
 .DS_Store

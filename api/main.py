@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from video_creator.db_utils import VideoDB
@@ -15,12 +15,13 @@ from create_audio.db_utils import PodcastDB
 
 from celery_app.tasks import generate_audio_task, create_video_task
 from .logger import api_logger
-from .models import PodcastJob
+from .models.podcast_job import PodcastJob
 from .db import get_db, engine, Base
 from config import get_error_detail, format_error_message, OUTPUTS_DIR
 from profile_utils import ProfileUtils
 from .google_auth import router as google_auth_router
 from publish.routes import router as publish_router
+from .routers import user_router, voice_router, style_router, podcast_router
 from .security import verify_api_key
 
 # Get package root directory
@@ -111,6 +112,20 @@ async def generic_exception_handler(request, exc):
 
 app.include_router(google_auth_router, tags=["auth"])
 app.include_router(publish_router, tags=["publish"])
+app.include_router(user_router, prefix="/api/users", tags=["users"])
+app.include_router(voice_router, prefix="/api/voices", tags=["voices"])
+app.include_router(style_router, prefix="/api/styles", tags=["styles"])
+app.include_router(podcast_router, prefix="/api/podcasts", tags=["podcasts"])
+
+@app.get("/", include_in_schema=False)
+async def root():
+    """Redirect to API documentation"""
+    return RedirectResponse(url="/api/docs")
+
+@app.get("/docs", include_in_schema=False)
+async def docs_redirect():
+    """Redirect to API documentation"""
+    return RedirectResponse(url="/api/docs")
 
 @app.post("/api/podcasts/", response_model=PodcastResponse, tags=["podcasts"])
 async def create_podcast(request: PodcastRequest, db: Session = Depends(get_db), api_key: str = Depends(verify_api_key)):
